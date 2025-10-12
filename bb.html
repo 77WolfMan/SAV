@@ -23,6 +23,20 @@ h1 { text-align: center; }
   gap: 10px;
 }
 
+/* Quando a largura da janela for menor que 1200px → 2 colunas */
+@media (max-width: 1200px) {
+  .calendario {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Quando a largura da janela for menor que 800px → 1 coluna */
+@media (max-width: 800px) {
+  .calendario {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+
 .mes {
   border: 1px solid #ccc;
   border-radius: 8px;

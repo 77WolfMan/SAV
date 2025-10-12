@@ -1488,15 +1488,18 @@ function gerarCalendario(dados) {
     
 } // fim gerarCalendario
 
+// Ajusta o tamanhos...
+ajustarTamanhoDiasEBolas();
+ajustarColunasCalendario();
+
 // Carrega tudo
 carregarDados();
 
-// Ajusta o tamanho da letra inicialmente
-ajustarTamanhoDiasEBolas();
-
-// Adiciona listener para redimensionamento da janela
-window.addEventListener('resize', ajustarTamanhoDiasEBolas);
-
+// Adiciona listener para redimensionamentos...
+window.addEventListener('resize', () => {
+  ajustarTamanhoDiasEBolas();
+  ajustarColunasCalendario();
+});
 
 
 function ajustarTamanhoDiasEBolas() {
@@ -1555,3 +1558,27 @@ function ajustarTamanhoDiasEBolas() {
     }
   });
 }
+
+function ajustarColunasCalendario() {
+  const calendario = document.getElementById('calendario');
+  if (!calendario) return;
+
+  const ua = navigator.userAgent.toLowerCase();
+  const isMobileUA = /mobile|android|iphone|ipad|ipod|blackberry|iemobile|opera mini/.test(ua);
+  const larguraTela = window.innerWidth;
+
+  // Regra: se for mobile ou tela muito pequena → 1 ou 2 colunas
+  if (isMobileUA || larguraTela <= 800) {
+    calendario.style.gridTemplateColumns = 'repeat(1, 1fr)';
+  } else if (larguraTela <= 1200) {
+    calendario.style.gridTemplateColumns = 'repeat(2, 1fr)';
+  } else {
+    calendario.style.gridTemplateColumns = 'repeat(3, 1fr)';
+  }
+}
+
+// Executa após o DOM estar pronto
+document.addEventListener('DOMContentLoaded', () => {
+  ajustarColunasCalendario();
+  window.addEventListener('resize', ajustarColunasCalendario);
+});
