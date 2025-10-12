@@ -36,18 +36,45 @@ const legendaContainer = document.getElementById("legenda");
 // ============================================================================
 // 2. FUNÇÃO PRINCIPAL: CARREGAR DADOS
 // ============================================================================
-
-
 async function carregarDados() {
     try {
-        // usa `dados` já carregado via dados.js
+        // 1️⃣ Mostra a resolução
+        const largura = window.innerWidth;
+        const altura = window.innerHeight;
+        const ratio = window.devicePixelRatio || 1;
+        const resolucaoFisica = `${Math.round(largura * ratio)} x ${Math.round(altura * ratio)}`;
+        const resolucaoCSS = `${largura} x ${altura}`;
+
+        const mensagem = document.createElement('div');
+        mensagem.id = 'mensagemResolucao';
+        mensagem.style.textAlign = 'center';
+        mensagem.style.margin = '20px';
+        mensagem.style.fontSize = '18px';
+        mensagem.style.fontWeight = 'bold';
+        mensagem.textContent = `Resolução do ecrã: ${resolucaoCSS} (CSS pixels), ${resolucaoFisica} (físico)`;
+
+        const calendario = document.getElementById('calendario');
+        if (calendario) {
+            calendario.parentNode.insertBefore(mensagem, calendario);
+        } else {
+            document.body.insertBefore(mensagem, document.body.firstChild);
+        }
+
+        // 2️⃣ Pausa de 1 segundo
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // 3️⃣ Atualiza o título
         const tituloH1 = document.getElementById("agendaTitulo");
         if (tituloH1 && dados.ano) {
             tituloH1.textContent = `AGENDA ANUAL - SAV ${dados.ano}`;
         }
 
+        // 4️⃣ Gera o calendário e legenda
         gerarCalendario(dados);
         gerarLegenda(dados.tiposTarefa);
+
+        // 5️⃣ Remove a mensagem da resolução (opcional)
+        // mensagem.remove();
 
     } catch (error) {
         console.error("Erro ao carregar dados:", error);
@@ -1588,8 +1615,10 @@ function ajustarColunasCalendario() {
   }
 }
 
+
 // Executa após o DOM estar pronto
 document.addEventListener('DOMContentLoaded', () => {
+  mostrarResolucao;
   ajustarColunasCalendario();
   window.addEventListener('resize', ajustarColunasCalendario);
 });
