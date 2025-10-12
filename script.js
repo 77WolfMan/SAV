@@ -38,11 +38,12 @@ const legendaContainer = document.getElementById("legenda");
 // ============================================================================
 async function carregarDados() {
     try {
+        /* PARA DETERMINAR A RESOLUÇÃO DO ECRÃ E SE É TELEMOVEL OU NÃO....
         // Detectar telemóvel via userAgent
   		const ua = navigator.userAgent.toLowerCase();
   		
   		const isMobile = /mobile|android|iphone|ipad|ipod|blackberry|iemobile|opera mini/.test(ua);
-  	    // 1️⃣ Mostra a resolução
+  	    // Mostra a resolução
         const largura = window.innerWidth;
         const altura = window.innerHeight;
         const ratio = window.devicePixelRatio || 1;
@@ -55,7 +56,7 @@ async function carregarDados() {
         mensagem.style.margin = '20px';
         mensagem.style.fontSize = '18px';
         mensagem.style.fontWeight = 'bold';
-        mensagem.textContent = `Resolução do ecrã: ${resolucaoCSS} (CSS pixels), ${resolucaoFisica} (físico) - ${isMobile}`;
+        mensagem.textContent = `Resolução do ecrã: ${resolucaoCSS} (CSS pixels), ${resolucaoFisica} (físico) - ${isMobile}`;*/
 
         const calendario = document.getElementById('calendario');
         if (calendario) {
@@ -64,20 +65,17 @@ async function carregarDados() {
             document.body.insertBefore(mensagem, document.body.firstChild);
         }
 
-        // 2️⃣ Pausa de 1 segundo
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // 3️⃣ Atualiza o título
+        // Atualiza o título
         const tituloH1 = document.getElementById("agendaTitulo");
         if (tituloH1 && dados.ano) {
             tituloH1.textContent = `AGENDA ANUAL - SAV ${dados.ano}`;
         }
 
-        // 4️⃣ Gera o calendário e legenda
+        // Gera o calendário e legenda
         gerarCalendario(dados);
         gerarLegenda(dados.tiposTarefa);
 
-        // 5️⃣ Remove a mensagem da resolução (opcional)
+        // Remove a mensagem da resolução (opcional)
         // mensagem.remove();
 
     } catch (error) {
@@ -1602,7 +1600,7 @@ function ajustarColunasCalendario() {
 
   if (isMobile) {
     // Se for telemóvel
-    if (larguraTela <= 450) {
+    if (larguraTela <= 700) {
       calendario.style.gridTemplateColumns = 'repeat(1, 1fr)';
     } else {
       calendario.style.gridTemplateColumns = 'repeat(2, 1fr)';
