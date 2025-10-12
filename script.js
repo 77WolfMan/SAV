@@ -1504,6 +1504,7 @@ function ajustarTamanhoDiasEBolas() {
 
   dias.forEach(dia => {
     const largura = dia.clientWidth;
+    const altura = dia.clientHeight;
 
     // Ajuste do número do dia
     const numero = dia.querySelector('.numero-background');
@@ -1550,7 +1551,7 @@ function ajustarTamanhoDiasEBolas() {
       bolasContainer.style.flexWrap = 'wrap';
       bolasContainer.style.gap = '2px';
       bolasContainer.style.padding = '1px';
-      //bolasContainer.style.justifyContent = 'center';
+      bolasContainer.style.justifyContent = 'center';
     }
   });
 }
