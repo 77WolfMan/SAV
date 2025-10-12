@@ -38,7 +38,6 @@ const legendaContainer = document.getElementById("legenda");
 // ============================================================================
 async function carregarDados() {
     try {
-        /* PARA DETERMINAR A RESOLUÇÃO DO ECRÃ E SE É TELEMOVEL OU NÃO....
         // Detectar telemóvel via userAgent
   		const ua = navigator.userAgent.toLowerCase();
   		
@@ -56,7 +55,7 @@ async function carregarDados() {
         mensagem.style.margin = '20px';
         mensagem.style.fontSize = '18px';
         mensagem.style.fontWeight = 'bold';
-        mensagem.textContent = `Resolução do ecrã: ${resolucaoCSS} (CSS pixels), ${resolucaoFisica} (físico) - ${isMobile}`;*/
+        mensagem.textContent = `Resolução do ecrã: ${resolucaoCSS} (CSS pixels), ${resolucaoFisica} (físico) - ${isMobile}`;
 
         const calendario = document.getElementById('calendario');
         if (calendario) {
@@ -64,6 +63,9 @@ async function carregarDados() {
         } else {
             document.body.insertBefore(mensagem, document.body.firstChild);
         }
+
+        // Pausa de 1 segundo
+        await new Promise(resolve => setTimeout(resolve, 1)); // 1000 -> 1 segundo
 
         // Atualiza o título
         const tituloH1 = document.getElementById("agendaTitulo");
@@ -76,7 +78,7 @@ async function carregarDados() {
         gerarLegenda(dados.tiposTarefa);
 
         // Remove a mensagem da resolução (opcional)
-        // mensagem.remove();
+        mensagem.remove();
 
     } catch (error) {
         console.error("Erro ao carregar dados:", error);
