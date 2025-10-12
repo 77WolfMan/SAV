@@ -1567,10 +1567,10 @@ function ajustarColunasCalendario() {
   const isMobile = /mobile|android|iphone|ipad|ipod|blackberry|iemobile|opera mini/.test(ua);
   const larguraTela = window.innerWidth;
 
-  if (isMobile || larguraTela <= 1200) {
+  if (isMobile || larguraTela <= 800) {
     // Telemóvel ou largura <= 1200px → 1 coluna
     calendario.style.gridTemplateColumns = 'repeat(1, 1fr)';
-  } else if (larguraTela <= 1600) {
+  } else if (larguraTela <= 1200) {
     // Portátil médio → 2 colunas
     calendario.style.gridTemplateColumns = 'repeat(2, 1fr)';
   } else {
