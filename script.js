@@ -1485,7 +1485,72 @@ function gerarCalendario(dados) {
         // Inserir mês finalizado no calendário
         calendarioContainer.appendChild(divMes);
     } // fim loop meses
+    
 } // fim gerarCalendario
 
 // Carrega tudo
 carregarDados();
+
+// Ajusta o tamanho da letra inicialmente
+ajustarTamanhoDiasEBolas();
+
+// Adiciona listener para redimensionamento da janela
+window.addEventListener('resize', ajustarTamanhoDiasEBolas);
+
+
+
+function ajustarTamanhoDiasEBolas() {
+  const dias = document.querySelectorAll('.dia');
+
+  dias.forEach(dia => {
+    const largura = dia.clientWidth;
+
+    // Ajuste do número do dia
+    const numero = dia.querySelector('.numero-background');
+    if (numero) {
+      let tamanhoFonte = Math.floor(largura * 0.5);
+      if (tamanhoFonte > 34) tamanhoFonte = 34;
+      numero.style.fontSize = `${tamanhoFonte}px`;
+      numero.style.position = 'absolute';
+      numero.style.top = '50%';
+      numero.style.left = '50%';
+      numero.style.transform = 'translate(-50%, -50%)';
+      numero.style.margin = '0';
+    }
+
+    // Ajuste das bolinhas
+    const bolasContainer = dia.querySelector('.bolas-container');
+    if (bolasContainer) {
+      let tamanhoBola = Math.floor(largura * 0.5); // tamanho da bola proporcional à célula
+      if (tamanhoBola > 16) tamanhoBola = 16;        // tamanho máximo
+      if (tamanhoBola < 6) tamanhoBola = 6;          // tamanho mínimo
+
+      const bolas = bolasContainer.querySelectorAll('.bola-tarefa');
+      bolas.forEach(bola => {
+        // Ajusta tamanho da bolinha
+        bola.style.width = `${tamanhoBola}px`;
+        bola.style.height = `${tamanhoBola}px`;
+
+        // Ajusta fonte do texto dentro da bolinha
+        let tamanhoFonteBola = Math.floor(tamanhoBola * 0.85); // 60% da largura da bolinha
+        if (tamanhoFonteBola < 2) tamanhoFonteBola = 2;
+        bola.style.fontSize = `${tamanhoFonteBola}px`;
+
+        // Centraliza texto na bolinha
+        bola.style.display = 'flex';
+        bola.style.alignItems = 'center';
+        bola.style.justifyContent = 'center';
+        bola.style.paddingLeft = '2px';
+        bola.style.paddingRight = '2px';
+      });
+
+      // Centraliza container horizontalmente na célula
+      bolasContainer.style.position = 'absolute';
+      bolasContainer.style.display = 'flex';
+      bolasContainer.style.flexWrap = 'wrap';
+      bolasContainer.style.gap = '2px';
+      bolasContainer.style.padding = '1px';
+      //bolasContainer.style.justifyContent = 'center';
+    }
+  });
+}
