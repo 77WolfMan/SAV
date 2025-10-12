@@ -1561,21 +1561,31 @@ function ajustarTamanhoDiasEBolas() {
 
 function ajustarColunasCalendario() {
   const calendario = document.getElementById('calendario');
+  const calendario = document.getElementById('calendario');
   if (!calendario) return;
 
+  // Detectar telemóvel via userAgent
   const ua = navigator.userAgent.toLowerCase();
   const isMobile = /mobile|android|iphone|ipad|ipod|blackberry|iemobile|opera mini/.test(ua);
+
   const larguraTela = window.innerWidth;
 
-  if (isMobile || larguraTela <= 800) {
-    // Telemóvel ou largura <= 1200px → 1 coluna
-    calendario.style.gridTemplateColumns = 'repeat(1, 1fr)';
-  } else if (larguraTela <= 1200) {
-    // Portátil médio → 2 colunas
-    calendario.style.gridTemplateColumns = 'repeat(2, 1fr)';
+  if (isMobile) {
+    // Se for telemóvel
+    if (larguraTela <= 800) {
+      calendario.style.gridTemplateColumns = 'repeat(1, 1fr)';
+    } else {
+      calendario.style.gridTemplateColumns = 'repeat(2, 1fr)';
+    }
   } else {
-    // Desktop grande → 3 colunas
-    calendario.style.gridTemplateColumns = 'repeat(3, 1fr)';
+    // Se não for telemóvel (portátil/desktop)
+    if (larguraTela <= 800) {
+      calendario.style.gridTemplateColumns = 'repeat(1, 1fr)';
+    } else if (larguraTela <= 1200) {
+      calendario.style.gridTemplateColumns = 'repeat(2, 1fr)';
+    } else {
+      calendario.style.gridTemplateColumns = 'repeat(3, 1fr)';
+    }
   }
 }
 
