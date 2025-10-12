@@ -55,7 +55,7 @@ async function carregarDados() {
         mensagem.style.margin = '20px';
         mensagem.style.fontSize = '18px';
         mensagem.style.fontWeight = 'bold';
-        mensagem.textContent = `Resolução do ecrã: ${resolucaoCSS} (CSS pixels), ${resolucaoFisica} (físico) - ${isMobile}`;
+        mensagem.textContent = `Resolução do ecrã: ${resolucaoCSS} (CSS pixels), ${resolucaoFisica} (físico) - Mobile: ${isMobile}`;
 
         const calendario = document.getElementById('calendario');
         if (calendario) {
@@ -1602,7 +1602,7 @@ function ajustarColunasCalendario() {
 
   if (isMobile) {
     // Se for telemóvel
-    if (larguraTela <= 700) {
+    if (larguraTela <= 800) {
       calendario.style.gridTemplateColumns = 'repeat(1, 1fr)';
     } else {
       calendario.style.gridTemplateColumns = 'repeat(2, 1fr)';
