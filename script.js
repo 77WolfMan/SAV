@@ -1570,7 +1570,7 @@ function ajustarColunasCalendario() {
   // Regra: se for mobile ou tela muito pequena → 1 ou 2 colunas
   if (isMobileUA || larguraTela <= 800) {
     calendario.style.gridTemplateColumns = 'repeat(1, 1fr)';
-  } else if (larguraTela <= 1200) {
+  } else if (isMobileUA || larguraTela <= 1200) {
     calendario.style.gridTemplateColumns = 'repeat(2, 1fr)';
   } else {
     calendario.style.gridTemplateColumns = 'repeat(3, 1fr)';
