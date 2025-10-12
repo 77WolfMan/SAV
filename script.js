@@ -1561,7 +1561,6 @@ function ajustarTamanhoDiasEBolas() {
 
 function ajustarColunasCalendario() {
   const calendario = document.getElementById('calendario');
-  const calendario = document.getElementById('calendario');
   if (!calendario) return;
 
   // Detectar telemóvel via userAgent
@@ -1579,9 +1578,9 @@ function ajustarColunasCalendario() {
     }
   } else {
     // Se não for telemóvel (portátil/desktop)
-    if (larguraTela <= 800) {
+    if (larguraTela < 800) {
       calendario.style.gridTemplateColumns = 'repeat(1, 1fr)';
-    } else if (larguraTela <= 1200) {
+    } else if (larguraTela < 1200) {
       calendario.style.gridTemplateColumns = 'repeat(2, 1fr)';
     } else {
       calendario.style.gridTemplateColumns = 'repeat(3, 1fr)';
