@@ -1564,7 +1564,7 @@ function ajustarColunasCalendario() {
   if (!calendario) return;
 
   const ua = navigator.userAgent.toLowerCase();
-  const isMobileUA = /mobile|android|iphone|ipad|ipod|blackberry|iemobile|opera mini/.test(ua);
+  const isMobile = /mobile|android|iphone|ipad|ipod|blackberry|iemobile|opera mini/.test(ua);
   const larguraTela = window.innerWidth;
 
   if (isMobile || larguraTela <= 1200) {
