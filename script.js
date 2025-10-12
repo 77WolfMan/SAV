@@ -38,7 +38,11 @@ const legendaContainer = document.getElementById("legenda");
 // ============================================================================
 async function carregarDados() {
     try {
-        // 1️⃣ Mostra a resolução
+        // Detectar telemóvel via userAgent
+  		const ua = navigator.userAgent.toLowerCase();
+  		
+  		const isMobile = /mobile|android|iphone|ipad|ipod|blackberry|iemobile|opera mini/.test(ua);
+  	    // 1️⃣ Mostra a resolução
         const largura = window.innerWidth;
         const altura = window.innerHeight;
         const ratio = window.devicePixelRatio || 1;
@@ -51,7 +55,7 @@ async function carregarDados() {
         mensagem.style.margin = '20px';
         mensagem.style.fontSize = '18px';
         mensagem.style.fontWeight = 'bold';
-        mensagem.textContent = `Resolução do ecrã: ${resolucaoCSS} (CSS pixels), ${resolucaoFisica} (físico)`;
+        mensagem.textContent = `Resolução do ecrã: ${resolucaoCSS} (CSS pixels), ${resolucaoFisica} (físico) - ${isMobile}`;
 
         const calendario = document.getElementById('calendario');
         if (calendario) {
@@ -1598,7 +1602,7 @@ function ajustarColunasCalendario() {
 
   if (isMobile) {
     // Se for telemóvel
-    if (larguraTela <= 800) {
+    if (larguraTela <= 450) {
       calendario.style.gridTemplateColumns = 'repeat(1, 1fr)';
     } else {
       calendario.style.gridTemplateColumns = 'repeat(2, 1fr)';
