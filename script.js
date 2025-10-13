@@ -37,13 +37,18 @@ const legendaContainer = document.getElementById("legenda");
 // ============================================================================
 // 2. FUNÇÃO QUE PERMITE ARRASTAR JANELAS/POPUPS
 // ============================================================================
-function tornarDraggable(element, handle = null) {
+function tornarDraggable(element, handle) {
     let startX = 0, startY = 0, origX = 0, origY = 0;
 
-    const dragArea = handle || element;
+    if (!handle) handle = element; // fallback, mas ideal é usar a barra do popup
 
     const dragStart = (e) => {
-        e.preventDefault();
+        const target = e.target;
+        // se o alvo não for a handle, ignora (permite clicar nos botões)
+        if (!handle.contains(target)) return;
+
+        e.preventDefault(); // bloqueia scroll apenas se arrastar na handle
+
         if (e.type === "touchstart") {
             startX = e.touches[0].clientX;
             startY = e.touches[0].clientY;
@@ -52,12 +57,10 @@ function tornarDraggable(element, handle = null) {
             startY = e.clientY;
         }
 
-        // Converter posição centralizada em left/top absolutos
         const rect = element.getBoundingClientRect();
         origX = rect.left;
         origY = rect.top;
 
-        // Remove transform apenas após calcular posição inicial
         element.style.transform = "none";
         element.style.left = origX + "px";
         element.style.top  = origY + "px";
@@ -70,7 +73,6 @@ function tornarDraggable(element, handle = null) {
     };
 
     const dragMove = (e) => {
-        e.preventDefault();
         const clientX = e.type.startsWith("touch") ? e.touches[0].clientX : e.clientX;
         const clientY = e.type.startsWith("touch") ? e.touches[0].clientY : e.clientY;
 
@@ -85,8 +87,8 @@ function tornarDraggable(element, handle = null) {
         document.removeEventListener("touchend", dragEnd);
     };
 
-    dragArea.addEventListener("mousedown", dragStart);
-    dragArea.addEventListener("touchstart", dragStart, { passive: false });
+    handle.addEventListener("mousedown", dragStart);
+    handle.addEventListener("touchstart", dragStart, { passive: false });
 }
 
 // ============================================================================
