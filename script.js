@@ -737,7 +737,12 @@ function gerarCalendario(dados) {
 				tabelaGrafico.style.width = "100%";
 				tabelaGrafico.style.marginTop = "8px";
 				tabelaGrafico.style.borderRadius = "3px";
-				tabelaGrafico.style.backgroundColor = "#fafafa";
+				
+				// --- tabela alinhada à esquerda ---
+				tabelaGrafico.style.marginLeft = "0";       // encosta à esquerda do container
+				tabelaGrafico.style.marginRight = "auto";   // evita centralização
+				tabelaGrafico.style.borderCollapse = "collapse"; // já tens
+
 
 				// === Linha única ===
 				const trGrafico = document.createElement("tr");
@@ -746,8 +751,12 @@ function gerarCalendario(dados) {
 				const tdPie = document.createElement("td");
 				tdPie.classList.add("tdPie");
 				tdPie.style.padding = "4px 4px 2px 4px";
-				tdPie.style.width = "280px";
-				tdPie.style.maxHeight = "140px";
+				tdPie.style.width = "270px";      // largura fixa
+				tdPie.style.minWidth = "270px";   // evita encolher
+				tdPie.style.maxWidth = "270px";   // evita expandir
+
+				tdPie.style.maxHeight = "160px";
+				
 				tdPie.style.textAlign = "center";
 				tdPie.style.verticalAlign = "center";
 				tdPie.innerHTML = 'TIPOS DE INTERVENÇÃO<br><span style="font-size: 13px;">(Dia/Mês)</span><span style="font-size: 16px;"> <br></span>';
@@ -760,14 +769,20 @@ function gerarCalendario(dados) {
 				// Canvas PIE
 				const canvasPie = document.createElement("canvas");
 				canvasPie.id = `graficoPizza-${mes}`;
-				canvasPie.style.width = "220px";
-				canvasPie.style.maxHeight = "160px";
+				// Define tamanho fixo do canvas
+				canvasPie.width = 260;
+				canvasPie.height = 160;
+
+				canvasPie.style.maxWidth = "260px";   // largura visual
+				canvasPie.style.height = "160px";  // altura
 				tdPie.appendChild(canvasPie);
 				trGrafico.appendChild(tdPie);
 
 				// COLUNA 2 — ESPAÇADOR
 				const tdEspaco1 = document.createElement("td");
-				tdEspaco1.style.width = "20px";
+				tdEspaco1.style.width = "20px";      // largura fixa
+				tdEspaco1.style.minWidth = "20px";   // evita encolher
+				tdEspaco1.style.maxWidth = "20px";   // evita expandir
 				tdEspaco1.style.borderTop = "none";
 				tdEspaco1.style.borderBottom = "none";
 				tdEspaco1.style.borderRight = "2px solid #444";
@@ -777,7 +792,9 @@ function gerarCalendario(dados) {
 				const tdBar = document.createElement("td");
 				tdBar.classList.add("tdBar");
 				tdBar.style.padding = "4px 4px 2px 4px";
-				tdBar.style.width = "240px";
+				tdBar.style.width = "240px";      // largura fixa
+				tdBar.style.minWidth = "240px";   // evita encolher
+				tdBar.style.maxWidth = "240px";   // evita expandir
 				tdBar.style.textAlign = "center";
 				tdBar.style.verticalAlign = "center";
 				tdBar.innerHTML = 'ALOCAÇÃO DOS TÉCNICOS<br><span style="font-size: 13px;">(Dias no Mês)</span><span style="font-size: 16px;"> <br></span>';
@@ -797,7 +814,7 @@ function gerarCalendario(dados) {
 
 				// COLUNA 4 — ESPAÇADOR FINAL
 				const tdEspaco2 = document.createElement("td");
-				tdEspaco2.style.width = "340px";
+				tdEspaco2.style.minWidth = "300px";
 				tdEspaco2.style.borderTop = "none";
 				tdEspaco2.style.borderBottom = "none";
 				tdEspaco2.style.borderRight = "none"; // sem lateral direita
@@ -947,62 +964,120 @@ function gerarCalendario(dados) {
                 
                 // ================== GRÁFICO PIE ==================
             
-                const configGraficoPie = {
-    				type: "pie",
-    				data: dadosGrafico,
-    				plugins: [ChartDataLabels],
-    				options: {
-        				responsive: true,
-        				plugins: {
-            				legend: {
-                				position: "right",
-                				labels: {
-                    				align: "end",
-                    				boxWidth: 12,
-                    				boxHeight: 8,
-                    				borderRadius: 6,
-                    				padding: 4, // espaço entre os itens da legenda
-                    				color: "#000",
-                    				font: { size: 13, weight: "normal" },
+                // Verifica se há dados reais
+				const valores = Object.values(diasPorTipo);
+				const labels = Object.keys(diasPorTipo);
 
-                    				// Adiciona 5 linhas em branco no topo das legendas
-                    				generateLabels: function(chart) {
-                        				// Labels originais padrão do Chart.js
-                        				const original = Chart.overrides.pie.plugins.legend.labels.generateLabels(chart);
+				// Mantemos as cores originais para cada tipo, mas semi-transparente se valor = 0
+				const backgroundColors = labels.map((label, idx) => {
+				    return valores[idx] === 0 
+				        ? `${coresCategorias[idx]}88` // pie visível mas translúcido
+				        : coresCategorias[idx];       // cor original se valor > 0
+				});
 
-                        				// Cria 4 linhas em branco sem quadrado
-                        				const linhasEmBranco = Array(4).fill().map(() => ({
-                            				text: "",       // texto vazio
-                            				color: backgroundPopup,
-                            				fillStyle: "transparent", // remove cor
-                            				strokeStyle: "transparent",
-                            				boxWidth: 0,     // remove quadrado
-                            				hidden: true,    // não interativo
-                            				lineWidth: 0
-                        				}));
+				const dadosGraficoPie = {
+				    labels: labels,
+				    datasets: [{
+				        data: valores,
+				        backgroundColor: backgroundColors,
+				        borderColor: "#000",
+				        borderWidth: 1
+				    }]
+				};
 
-                        				// Retorna linhas vazias + labels reais
-                        				return [...linhasEmBranco, ...original];
-                    				}
-                				}
-            				},
-            				datalabels: {
-                				color: "#fff",
-                				font: { weight: "bold", size: 18 },
-                				textStrokeColor: "#000",
-                				textStrokeWidth: 3,
-                				formatter: (value) => value === 0 ? '' : value,
-                				anchor: 'center',
-                				align: 'center',
-                				offset: 0
-            				},
-            				tooltip: {
-                				callbacks: {
-                    				label: (context) => `${context.label}: ${context.raw} intervenções`
-                				}
-            				}
-        				}
-    				}
+				const configGraficoPie = {
+				    type: "pie",
+				    data: dadosGraficoPie,
+				    plugins: [
+				        ChartDataLabels,
+ 				       {
+				            id: 'centroInterrogacao',
+				    afterDraw: function(chart) {
+				        const total = valores.reduce((a, b) => a + b, 0);
+				        if (total === 0) {
+				            const ctx = chart.ctx;
+				            const width = chart.width;
+				            const height = chart.height;
+				            ctx.save();
+
+				            // Parâmetros ajustáveis
+				            const raioPercent = 0.48;   // raio do círculo em % do canvas (0.5 = metade)
+ 				           const deslocX = -45;         // deslocamento horizontal (px ou % relativo)
+ 				           const deslocY = 0;         // deslocamento vertical
+ 				           const tamanhoInterrogacao = Math.min(width, height) * 0.25; // tamanho do ?
+
+ 				           // Posição central (ajustável)
+ 				           const centerX = width / 2 + deslocX;
+ 				           const centerY = height / 2 + deslocY;
+				
+ 				           // Fundo circular translúcido
+ 				           const radius = Math.min(width, height) * raioPercent;
+ 				           ctx.beginPath();
+ 				           ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+ 				           ctx.fillStyle = "rgba(0,0,0,0.15)"; // transparência ajustável
+ 				           ctx.fill();
+
+				            // ?
+				            ctx.fillStyle = "#000";  // cor do texto
+				            ctx.font = `bold ${tamanhoInterrogacao}px Arial`;
+				            ctx.textAlign = 'center';
+ 				           ctx.textBaseline = 'middle';
+				            ctx.fillText('?', centerX, centerY);
+
+				            ctx.restore();
+				        }
+				    }
+		        }
+ 			   ],
+    			options: {
+        			responsive: false,           // importante para respeitar tamanho do canvas
+        			maintainAspectRatio: false,  // impede redimensionamento automático
+        			layout: {
+        				padding: { right: -10 }   // aumenta ou reduz conforme desejado
+    				},
+        			plugins: {
+            			legend: {
+                			position: "right",
+                			labels: {
+                    			align: "end",
+                    			boxWidth: 12,
+                    			boxHeight: 8,
+                    			borderRadius: 6,
+                    			padding: 4,
+                    			color: "#000",
+                    			font: { size: 13, weight: "normal" },
+                    			generateLabels: function(chart) {
+                        			const original = Chart.overrides.pie.plugins.legend.labels.generateLabels(chart);
+                        			const linhasEmBranco = Array(4).fill().map(() => ({
+                            			text: "",
+                            			color: backgroundPopup,
+                            			fillStyle: "transparent",
+                            			strokeStyle: "transparent",
+                            			boxWidth: 0,
+                            			hidden: true,
+                            			lineWidth: 0
+                        			}));
+                        			return [...linhasEmBranco, ...original];
+                    			}
+                			}
+            			},
+            			datalabels: {
+                			color: "#fff",
+                			font: { weight: "bold", size: 18 },
+                			textStrokeColor: "#000",
+                			textStrokeWidth: 3,
+                			formatter: (value) => value === 0 ? '' : value,
+                			anchor: 'center',
+                			align: 'center',
+                			offset: 0
+            			},
+            			tooltip: {
+                			callbacks: {
+                    			label: (context) => `${context.label}: ${context.raw} intervenções`
+                			}
+            			}
+       			 	}
+    			}
 				};
 				
 				// ================== GRÁFICO BAR ==================
@@ -1181,7 +1256,7 @@ function gerarCalendario(dados) {
 		    tdTitulo.colSpan = totalColunas;
 		    tdTitulo.style.textAlign = "center";
 		    tdTitulo.style.fontWeight = "bold";
- 		   tdTitulo.style.fontSize = "14px";
+ 		   	tdTitulo.style.fontSize = "14px";
 		    tdTitulo.style.padding = "4px";
 
 		   	// Bordas: inferior visível, outras transparentes
@@ -1250,15 +1325,15 @@ function gerarCalendario(dados) {
   		     	const tdNome = document.createElement("td");
   		     	tdNome.textContent = tecnico.nome;
   		     	tdNome.style.fontWeight = "bold";
-  		      tdNome.style.fontSize = "13px";
-  		      tdNome.style.textAlign = "right";
-  		      tdNome.style.padding = "2px 10px 2px 10px";
- 		       tdNome.style.borderRight = `2px solid ${tableborder}`;
-  		      tdNome.style.borderBottom = `1px dashed ${tableLine}`;
- 		       tdNome.style.backgroundColor = backgroundTableHeadersStats;
- 		       tdNome.style.color = "black";
- 		       tdNome.style.verticalAlign = "bottom";
-  		      tr.appendChild(tdNome);
+  		      	tdNome.style.fontSize = "13px";
+  		      	tdNome.style.textAlign = "right";
+  		      	tdNome.style.padding = "2px 10px 2px 10px";
+ 		       	tdNome.style.borderRight = `2px solid ${tableborder}`;
+  		      	tdNome.style.borderBottom = `1px dashed ${tableLine}`;
+ 		       	tdNome.style.backgroundColor = backgroundTableHeadersStats;
+ 		       	tdNome.style.color = "black";
+ 		       	tdNome.style.verticalAlign = "bottom";
+  		      	tr.appendChild(tdNome);
 
 		      	// Células dos dias do mês
 		        for (let d = 1; d <= ultimoDia.getDate(); d++) {
