@@ -25,6 +25,7 @@ const feriadoColor = "#fff4cc";
 const fdsColor = "#e0e0e0";
 const basicColor = "#f7f7f7";
 const backgroundTableHeadersMes = "#76d6ff";
+let popupGanttAberto = false; // indica se o popup está aberto
 
 // ============================================================================
 // 1. CONTÊINOS PRINCIPAIS
@@ -112,163 +113,6 @@ function initGanttOverlay(popup) {
 
     return canvas.getContext('2d');
 }
-
-// ============================================================================
-// 4. FUNÇÃO DESENHAR MOLDURAS (em qualquer canvas)
-// ============================================================================
-/* Desenha uma moldura retangular no canvas com título opcional.
- * 
- * @param {CanvasRenderingContext2D} ctx - Contexto do canvas.
- * @param {number} x - Posição X do canto superior esquerdo.
- * @param {number} y - Posição Y do canto superior esquerdo.
- * @param {number} width - Largura da moldura.
- * @param {number} height - Altura da moldura.
- * @param {Object} opts - Opções configuráveis.
- */
-function drawFrame(ctx, x, y, width, height, opts = {}) {
-    const o = Object.assign({
-        lineWidth: 2,
-        strokeStyle: titleColor,
-        lineDash: [],
-        cornerRadius: 0,
-        title: null,
-        titleFont: 'bold 16px Arial',
-        titleColor: '#000',
-        titlePadding: 4,
-        titleBackground: 'rgba(255,255,255,0.8)',
-        titleBgPadding: 4
-    }, opts);
-
-    const canvas = ctx.canvas;
-    const cssW = canvas.clientWidth || canvas.width;
-    const cssH = canvas.clientHeight || canvas.height;
-    const dpr = (cssW > 0) ? (canvas.width / cssW) : 1;
-    const toPx = v => v * dpr;
-
-    let X = toPx(x);
-    let Y = toPx(y);
-    let W = toPx(width);
-    let H = toPx(height);
-
-    ctx.save();
-    const half = toPx(o.lineWidth) / 2;
-    X += half;
-    Y += half;
-    W -= half * 2;
-    H -= half * 2;
-
-    ctx.lineWidth = toPx(o.lineWidth);
-    ctx.strokeStyle = o.strokeStyle;
-    ctx.setLineDash(o.lineDash || []);
-
-    // Desenha moldura arredondada ou retangular
-    if (o.cornerRadius > 0) {
-        roundedRectPath(ctx, X, Y, W, H, toPx(o.cornerRadius));
-        ctx.stroke();
-    } else {
-        ctx.strokeRect(X, Y, W, H);
-    }
-
-    // Desenha título
-    if (o.title) {
-        ctx.font = o.titleFont;
-        ctx.fillStyle = o.titleColor;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-
-        const fontSizeMatch = /(\d+)px/.exec(o.titleFont);
-        const fontSize = fontSizeMatch ? parseInt(fontSizeMatch[1], 10) : 16;
-
-        const metrics = ctx.measureText(o.title);
-        const textWidth = metrics.width;
-        const bgPad = toPx(o.titleBgPadding);
-        const bgW = textWidth + bgPad * 2;
-        const bgH = toPx(fontSize) + bgPad * 2;
-
-        const titleX = X + W / 2;
-        const titleY = Y - bgH / 2 - toPx(o.titlePadding);
-
-        if (o.titleBackground) {
-            ctx.save();
-            ctx.fillStyle = o.titleBackground;
-            roundedRectPath(ctx, titleX - bgW / 2, titleY - bgH / 2, bgW, bgH, Math.min(6 * dpr, bgH / 2));
-            ctx.fill();
-            ctx.restore();
-        }
-
-        ctx.fillText(o.title, titleX, titleY);
-    }
-
-    ctx.restore();
-
-    function roundedRectPath(ctx2, x2, y2, w2, h2, r2) {
-        const r = Math.min(r2, w2 / 2, h2 / 2);
-        ctx2.beginPath();
-        ctx2.moveTo(x2 + r, y2);
-        ctx2.lineTo(x2 + w2 - r, y2);
-        ctx2.quadraticCurveTo(x2 + w2, y2, x2 + w2, y2 + r);
-        ctx2.lineTo(x2 + w2, y2 + h2 - r);
-        ctx2.quadraticCurveTo(x2 + w2, y2 + h2, x2 + w2 - r, y2 + h2);
-        ctx2.lineTo(x2 + r, y2 + h2);
-        ctx2.quadraticCurveTo(x2, y2 + h2, x2, y2 + h2 - r);
-        ctx2.lineTo(x2, y2 + r);
-        ctx2.quadraticCurveTo(x2, y2, x2 + r, y2);
-        ctx2.closePath();
-    }
-}
-
-// ============================================================================
-// 5. TEXTO LIVRE (em qualquer canvas)
-// ============================================================================
-function createCustomTextPlugin({
-  id = 'customTextPlugin',
-  lines = [],            // Linhas de texto
-  fontSize = 14,         // Tamanho da fonte
-  fontWeight = 'bold',   // Peso da fonte
-  color = '#000',        // Cor do texto
-  align = 'center',      // 'left', 'center', 'right'
-  offsetX = 10,          // Distância na horizontal
-  offsetY = 10,          // Distância do topo do canvas
-  lineSpacing = 5        // Espaçamento entre linhas
-} = {}) {
-  return {
-    id,
-    afterDraw: (chart) => {
-      const ctx = chart.ctx;
-      const chartArea = chart.chartArea;
-
-      if (!lines.length) return; // Se não houver linhas, não desenha
-
-      ctx.save();
-      ctx.font = `${fontWeight} ${fontSize}px Arial`;
-      ctx.fillStyle = color;
-
-      let x;
-      if (align === 'left') {
-        ctx.textAlign = 'left';
-        x = chartArea.left + offsetX;
-      } else if (align === 'right') {
-        ctx.textAlign = 'right';
-        x = chartArea.right - offsetX;
-      } else {
-        ctx.textAlign = 'center';
-        x = chartArea.left + chartArea.width / 22 + offsetX;
-      }
-
-      ctx.textBaseline = 'top';
-
-      // Posição inicial do primeiro texto
-      let y = chartArea.top - offsetY;
-
-      // Desenha cada linha do título
-      lines.forEach((line, index) => {
-        ctx.fillText(line, x, y + index * (fontSize + lineSpacing));
-      });
-
-      ctx.restore();
-    }
-  };
-} 
 
 // ============================================================================
 // 6. FUNÇÃO: GERAR LEGENDA
@@ -502,8 +346,6 @@ function gerarCalendario(dados) {
         ganttPopup2.style.padding = "12px";
         ganttPopup2.style.border = "2px solid #ccc";
         ganttPopup2.style.borderRadius = "10px";
-        ganttPopup2.style.maxWidth = "90%";
-        ganttPopup2.style.maxHeight = "80%";
         ganttPopup2.style.overflow = "auto";
         ganttPopup2.style.zIndex = "2000";
         ganttPopup2.style.boxShadow = `
@@ -511,20 +353,15 @@ function gerarCalendario(dados) {
           -6px -6px 15px rgba(255, 255, 255, 0.7)
         `;
         document.body.appendChild(ganttPopup2);
-        ganttPopup2.style.height = "auto";   // altura inicial
-        ganttPopup2.style.maxHeight = "80%";
+        ganttPopup2.style.height = "300px";
 		ganttPopup2.dataset.originalHeight = ganttPopup2.style.height;
 		ganttPopup2.dataset.originalMaxHeight = ganttPopup2.style.maxHeight;
 
         // Container interno do popup
         const ganttContent = document.createElement('div');
-        ganttContent.style.width = '100%';
         ganttContent.style.boxSizing = 'border-box';
         ganttContent.style.paddingBottom = '10px';
         ganttPopup2.appendChild(ganttContent);
-
-        // impedir que cliques dentro do popup fechem-no (quando usamos listener global)
-        ganttPopup2.addEventListener("click", (ev) => ev.stopPropagation());
 
         // === Botão STATS dentro do popup (expande e insere estatísticas) ===
         let popupExpanded = false;
@@ -544,7 +381,7 @@ function gerarCalendario(dados) {
         ganttPopup2.appendChild(botaoStats);
         
 		// Define altura original do popup
-		ganttPopup2.style.height = "330px";
+		ganttPopup2.style.height = "300px";
 
         // Guardar instância do gráfico para destruir se o utilizador abrir/fechar repetidamente
         let chartInstance = null;
@@ -557,8 +394,7 @@ function gerarCalendario(dados) {
     		// ---------------- EXPANDE POPUP ----------------
     		if (popupExpanded) {
         		// Expande popup para mostrar stats
-        		ganttPopup2.style.height = "790px";
-        		//ganttPopup2.style.maxHeight = "95vh";
+        		ganttPopup2.style.height = "770px";
         		
         		const linhasPadding = "2px";	// Padding ara as linhas da tabela estatísticas
 
@@ -574,37 +410,72 @@ function gerarCalendario(dados) {
             		chartInstance = null;
         		}
 
-                // ================= CONTAINER ESTATÍSTICAS =================
+                // ================= CRIAÇÃO DE UMA TABELA PARA MOSTRAR E FIXAR A LEGENDAGEM DO MAPA MENSAL, A MENÇÃO DE ESTATISTICAS E A LINHA SEPARADORA =================
                 const tituloStats = document.createElement("div");
                 tituloStats.id = "gantt-estatisticas-title";
                 tituloStats.style.color = titleColor;
                 tituloStats.style.marginTop = "10px";
                 tituloStats.style.fontWeight = "bold";
                 tituloStats.style.textAlign = "left";
+                tituloStats.style.width = "900px"; // largura fixa
+                tituloStats.style.tableLayout = "fixed"; // respeitar larguras e alturas fixas
 
-                // Texto "ESTATÍSTICAS:"
+                // ====== TABELA DE UMA COLUNA ======
+                const tabelaTitulo = document.createElement("table");
+                tabelaTitulo.style.width = "100%";
+                tabelaTitulo.style.borderCollapse = "collapse";
+                tabelaTitulo.style.marginTop = "30px";
+
+                // ====== LINHA ÚNICA ======
+                const tr = document.createElement("tr");
+                const td = document.createElement("td");
+                td.style.textAlign = "left";
+                td.style.verticalAlign = "middle";
+                td.style.padding = "4px 0px 4px 0px";
+                td.style.width = "100%";
+                td.style.borderBottom = "1px solid #000"; // LINHA INFERIOR VISIVEL...
+
+                // ----- TEXTO -----
                 const texto = document.createElement("div");
                 texto.textContent = "ESTATÍSTICAS:";
-                texto.style.marginBottom = "3px";
-                texto.style.marginTop = "24px";
                 texto.style.fontWeight = "bold";
                 texto.style.fontSize = "14px";
+                texto.style.color = titleColor;
+                texto.style.margin = "0"; // sem margens extras
 
-                // Linha separadora
-                const linha = document.createElement("div");
-                linha.style.borderBottom = "1px solid #000";
-                linha.style.width = "100%";
-                linha.style.marginBottom = "6px";
-                linha.style.marginTop = "1px";
+                // Montagem final
+                td.appendChild(texto);
+                tr.appendChild(td);
+                tabelaTitulo.appendChild(tr);
+                tituloStats.appendChild(tabelaTitulo);
 
-                tituloStats.appendChild(texto);
-                tituloStats.appendChild(linha);
-
-                // ======= CRIAÇÃO DA TABELA =======
+                // ======= CRIAÇÃO DA TABELA ESTATISTICAS =======
 			    const tabela = document.createElement("table");
 			    tabela.style.width = "100%";
+			    
 			    tabela.style.borderCollapse = "collapse";
  			   	tabela.style.marginTop = "10px";
+ 			   	tabela.style.tableLayout = "fixed"; // importante para respeitar larguras fixas
+ 			   	
+ 			   	// ======= DEFINIR COLUNAS FIXAS =======
+				const colgroup = document.createElement("colgroup");
+				const colWidths = [
+				    "150px", // INTERVENTOR
+				    "50px",  // Total úteis
+				    "140px", // Trabalhados
+				    "55px",  // Férias
+				    "80px",  // Faltas
+				    "120px", // Disponíveis
+				    "100px", // Taxa Ocupacional
+				    "100px", // Intervenções
+				    "100px"  // Sobreposições
+				];
+				colWidths.forEach(w => {
+				    const col = document.createElement("col");
+				    col.style.width = w;
+				    colgroup.appendChild(col);
+				});
+				tabela.appendChild(colgroup);
 
     			// ---------- CABEÇALHO ----------
     			const thead = document.createElement("thead");
@@ -855,31 +726,83 @@ function gerarCalendario(dados) {
                 // ============================================================================
                 // GRÁFICOS COM CHART.JS
                 // ============================================================================
-    
-				const graficoFlexContainer = document.createElement("div");
-				graficoFlexContainer.id = "grafico-flex-container";
-				graficoFlexContainer.style.display = "flex";
-				graficoFlexContainer.style.justifyContent = "flex-start";
-				graficoFlexContainer.style.alignItems = "flex-start";
-				graficoFlexContainer.style.marginTop = "10px";
-				graficoFlexContainer.style.gap = "40px"; // espaço entre gráficos
+				
+				// === TABELA PRINCIPAL DOS GRÁFICOS ===
+				const tabelaGrafico = document.createElement("table");
+				tabelaGrafico.classList.add("tabelaGrafico");
+				tabelaGrafico.style.borderCollapse = "collapse";
+				tabelaGrafico.style.width = "100%";
+				tabelaGrafico.style.marginTop = "8px";
+				tabelaGrafico.style.borderRadius = "3px";
+				tabelaGrafico.style.backgroundColor = "#fafafa";
+
+				// === Linha única ===
+				const trGrafico = document.createElement("tr");
+
+				// COLUNA 1 — GRÁFICO PIZZA
+				const tdPie = document.createElement("td");
+				tdPie.classList.add("tdPie");
+				tdPie.style.padding = "4px 4px 2px 4px";
+				tdPie.style.width = "280px";
+				tdPie.style.maxHeight = "140px";
+				tdPie.style.textAlign = "center";
+				tdPie.style.verticalAlign = "center";
+				tdPie.innerHTML = 'TIPOS DE INTERVENÇÃO<br><span style="font-size: 13px;">(Dia/Mês)</span><span style="font-size: 16px;"> <br></span>';
+				tdPie.style.fontWeight = "bold";
+				tdPie.style.borderRight = "2px solid #444";
+				tdPie.style.borderLeft = "2px solid #444";
+				tdPie.style.borderTop = "2px solid #444";
+				tdPie.style.borderBottom = "2px solid #444";
 
 				// Canvas PIE
 				const canvasPie = document.createElement("canvas");
 				canvasPie.id = `graficoPizza-${mes}`;
-				canvasPie.style.maxWidth = "290px";
-				canvasPie.style.maxHeight = "210px";
-				graficoFlexContainer.appendChild(canvasPie);
+				canvasPie.style.width = "220px";
+				canvasPie.style.maxHeight = "160px";
+				tdPie.appendChild(canvasPie);
+				trGrafico.appendChild(tdPie);
+
+				// COLUNA 2 — ESPAÇADOR
+				const tdEspaco1 = document.createElement("td");
+				tdEspaco1.style.width = "20px";
+				tdEspaco1.style.borderTop = "none";
+				tdEspaco1.style.borderBottom = "none";
+				tdEspaco1.style.borderRight = "2px solid #444";
+				trGrafico.appendChild(tdEspaco1);
+
+				// COLUNA 3 — GRÁFICO BARRAS
+				const tdBar = document.createElement("td");
+				tdBar.classList.add("tdBar");
+				tdBar.style.padding = "4px 4px 2px 4px";
+				tdBar.style.width = "240px";
+				tdBar.style.textAlign = "center";
+				tdBar.style.verticalAlign = "center";
+				tdBar.innerHTML = 'ALOCAÇÃO DOS TÉCNICOS<br><span style="font-size: 13px;">(Dias no Mês)</span><span style="font-size: 16px;"> <br></span>';
+				tdBar.style.fontWeight = "bold";
+				tdBar.style.borderRight = "2px solid #444";
+				tdBar.style.borderLeft = "2px solid #444";
+				tdBar.style.borderTop = "2px solid #444";
+				tdBar.style.borderBottom = "2px solid #444";
 
 				// Canvas BARRAS
 				const canvasBar = document.createElement("canvas");
 				canvasBar.id = `graficoBar-${mes}`;
-				canvasBar.style.maxWidth = "250px";
-				canvasBar.style.maxHeight = "210px";
-				graficoFlexContainer.appendChild(canvasBar);
+				canvasBar.style.maxWidth = "220px";
+				canvasBar.style.height = "160px";
+				tdBar.appendChild(canvasBar);
+				trGrafico.appendChild(tdBar);
 
-				// Adiciona o container único ao popup
-				ganttContent.appendChild(graficoFlexContainer);
+				// COLUNA 4 — ESPAÇADOR FINAL
+				const tdEspaco2 = document.createElement("td");
+				tdEspaco2.style.width = "340px";
+				tdEspaco2.style.borderTop = "none";
+				tdEspaco2.style.borderBottom = "none";
+				tdEspaco2.style.borderRight = "none"; // sem lateral direita
+				trGrafico.appendChild(tdEspaco2);
+
+				// === Montagem final ===
+				tabelaGrafico.appendChild(trGrafico);
+				ganttContent.appendChild(tabelaGrafico);
 
 
                 // Dados do gráfico (mantive a tua contagem por tarefas)
@@ -1020,26 +943,11 @@ function gerarCalendario(dados) {
                 };
                 
                 // ================== GRÁFICO PIE ==================
-                const customTextPluginPie = createCustomTextPlugin({
-  					lines: [
-    					"TIPOS DE INTERVENÇÃO",
-    					"",
-    					"",
-   						"                                 [ Dias/Mês ]"
-  						],
-  					fontSize: 14,       // tamanho da letra
-  					fontWeight: 'bold', // peso da letra
-  					color: titleColor,  // cor do texto
-  					align: "left",    	// alinhamento
-  					offsetX: 62,        // distância a contar da esquerda do gráfico
-  					offsetY: 22,        // distância do topo do gráfico
-  					lineSpacing: 6      // espaço entre as linhas
-				});
-
+            
                 const configGraficoPie = {
     				type: "pie",
     				data: dadosGrafico,
-    				plugins: [ChartDataLabels, customTextPluginPie],
+    				plugins: [ChartDataLabels],
     				options: {
         				responsive: true,
         				plugins: {
@@ -1059,8 +967,8 @@ function gerarCalendario(dados) {
                         				// Labels originais padrão do Chart.js
                         				const original = Chart.overrides.pie.plugins.legend.labels.generateLabels(chart);
 
-                        				// Cria 5 linhas em branco sem quadrado
-                        				const linhasEmBranco = Array(5).fill().map(() => ({
+                        				// Cria 4 linhas em branco sem quadrado
+                        				const linhasEmBranco = Array(4).fill().map(() => ({
                             				text: "",       // texto vazio
                             				color: backgroundPopup,
                             				fillStyle: "transparent", // remove cor
@@ -1073,18 +981,6 @@ function gerarCalendario(dados) {
                         				// Retorna linhas vazias + labels reais
                         				return [...linhasEmBranco, ...original];
                     				}
-                				}
-            				},
-            				title: {
-                				display: true,
-                				text: '', // título do gráfico
-                				font: { size: 14, weight: 'bold' },
-                				color: titleColor,
-                				padding: {
-                    				top: 10,    // espaço acima do gráfico (título)
-                    				right: 10,  // distância entre gráfico e legenda direita
-                    				bottom: 10,
-                    				left: 0
                 				}
             				},
             				datalabels: {
@@ -1107,20 +1003,6 @@ function gerarCalendario(dados) {
 				};
 				
 				// ================== GRÁFICO BAR ==================
-				const customTextPluginBar = createCustomTextPlugin({
-  					lines: [
-    					"ALOCAÇÃO DOS TÉCNICOS",
-   						"(Por Dia no Mês)"
-  						],
-  					fontSize: 14,       // tamanho da letra
-  					fontWeight: 'bold', // peso da letra
-  					color: titleColor,  // cor do texto
-  					align: "center",    	// alinhamento
-  					offsetX: 98,        // distância a contar da esquerda do gráfico
-  					offsetY: 22,        // distância do topo do gráfico
-  					lineSpacing: 6      // espaço entre as linhas
-				});
-				
 				const configGraficoBar = {
     				type: "bar",
     				data: {
@@ -1133,7 +1015,7 @@ function gerarCalendario(dados) {
             				borderWidth: 1
         				}]
     				},
-    				plugins: [ChartDataLabels, customTextPluginBar],
+    				plugins: [ChartDataLabels],
     				options: {
         				responsive: true,
         				plugins: {
@@ -1170,10 +1052,25 @@ function gerarCalendario(dados) {
                 				barPercentage: 0.6
             				},
             				y: {
-                				beginAtZero: true,
-                				precision: 0,
-                				ticks: { font: { size: 14 }, color: "#000" }
-            				}
+    							type: 'linear',          // força escala linear
+    							beginAtZero: true,
+    							min: 0,
+    							max: 25,
+    							grace: 0,                // evita "folga" extra acima do valor máximo
+    							ticks: {
+        							stepSize: 5,         // garante divisões fixas
+        							autoSkip: false,     // impede o Chart.js de ocultar ticks
+        							callback: function(value) {
+            							return value;    // mostra todos (sem ocultar múltiplos)
+        							},
+        							font: { size: 14 },
+        							color: "#000"
+    							},
+    							grid: {
+        							drawBorder: true,
+        							color: "#aaa"
+    							}
+							}
         				}
     				}
 				};
@@ -1184,37 +1081,6 @@ function gerarCalendario(dados) {
                     chartInstance = null;
                 }
                 
-                // --- Inicializa ou pega no canvas sobreposto ao popup gnatt---
-    			const ctx = initGanttOverlay(ganttPopup2);
-    			if (!ctx) return;
-
-    			// Limpa canvas anterior
-    			ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
-    			// --- Desenha molduras ---
-    			drawFrame(ctx, 10, 565, 298, 220, {
-       		 		lineWidth: 2,
-        			strokeStyle: titleColor,
-        			title: '',
-        			titleFont: 'bold 13px Arial',
-        			titleColor: titleColor,
-        			cornerRadius: '3',
-        			titlePadding: 1,
-        			titleBackground: backgroundPopup,
-        			titleBgPadding: 0
-    			});
-    			
-    			drawFrame(ctx, 325, 565, 298, 220, {
-       		 		lineWidth: 2,
-        			strokeStyle: titleColor,
-        			title: '',
-        			titleFont: 'bold 13px Arial',
-        			titleColor: titleColor,
-        			cornerRadius: '3',
-        			titlePadding: 1,
-        			titleBackground: backgroundPopup,
-        			titleBgPadding: 0
-    			});
     			
     			// ===== Instancia os gráficos =====
 				chartInstancePie = new Chart(canvasPie, configGraficoPie);
@@ -1223,14 +1089,15 @@ function gerarCalendario(dados) {
 
             } else {
                 // Fecha o STATS: restaura altura original
-				ganttPopup2.style.height = "330px";
+				ganttPopup2.style.height = "300px";
 
 				// Remove completamente o container de stats se existir
 				const statsContainer = ganttContent.querySelector("#gantt-estatisticas-title");
 				if (statsContainer) statsContainer.remove();
 				
-        		const graficoFlex = ganttContent.querySelector("#grafico-flex-container");
-				if (graficoFlex) graficoFlex.remove();
+        		// Remove tabela de gráficos se existir
+				const tabelaGrafico = ganttContent.querySelector("table.tabelaGrafico");
+				if (tabelaGrafico) tabelaGrafico.remove();
 
 
 				// destrói gráfico Pie se existir
@@ -1252,266 +1119,315 @@ function gerarCalendario(dados) {
             
         });
 
+
+		// --- Clique fora do popup (fecha popup) ---
+		document.addEventListener("click", (ev) => {
+    		if (!ganttPopup2.contains(ev.target) && ev.target !== ganttBtn) {
+        		limparPopupGantt();
+        		ganttPopup2.style.display = "none";
+        		ganttPopup2.style.height = ganttPopup2.dataset.originalHeight;
+        		ganttPopup2.style.maxHeight = ganttPopup2.dataset.originalMaxHeight;
+        		limparPopupGantt() 
+        		popupGanttAberto = false; // marca como fechado
+    		}
+		});
+
+
+		// ====== FUNÇÃO PARA LIMPAR O POPUP GANTT ======
+		function limparPopupGantt() {
+    		// Limpa conteúdo do popup
+    		ganttContent.innerHTML = '';
+
+    		// Remove canvas se existir
+    		const existingCanvas = document.getElementById('canvasMoldura');
+    		if (existingCanvas) existingCanvas.remove();
+
+    		// Remove stats se estiverem expandidas
+    		const statsContainer = ganttContent.querySelector("#gantt-estatisticas-title");
+    		if (statsContainer) statsContainer.remove();
+
+    		// Destrói gráfico se existir
+    		if (chartInstance) {
+        		try { chartInstance.destroy(); } catch(e) {}
+        		chartInstance = null;
+    		}
+    		popupExpanded = false;
+		}
+
+
+		// ====== FUNÇÃO PARA MONTAR A TABELA MÊS NO POPUP GANTT ======
+		function montarTabelaMesGantt() {
+			// ====== Calcula número total de colunas ======
+		    const totalColunas = 1 + ultimoDia.getDate(); // 1 coluna interventor + dias do mês
+
+		    // Cria tabela Gantt
+		  	const tabela = document.createElement("table");
+		 	tabela.style.borderCollapse = "collapse";
+		    tabela.style.width = "100%";
+		    tabela.style.border = `2px solid ${tableborder}`;
+
+ 		   const thead = document.createElement("thead");
+
+ 		  	// ======= Primeira linha: título =======
+		    const trTitulo = document.createElement("tr");
+		    const tdTitulo = document.createElement("td");
+		    tdTitulo.colSpan = totalColunas;
+		    tdTitulo.style.textAlign = "center";
+		    tdTitulo.style.fontWeight = "bold";
+ 		   tdTitulo.style.fontSize = "14px";
+		    tdTitulo.style.padding = "4px";
+
+		   	// Bordas: inferior visível, outras transparentes
+		   	tdTitulo.style.borderTop = "2px solid transparent";
+		   	tdTitulo.style.borderLeft = "2px solid transparent";
+		 	tdTitulo.style.borderRight = "2px solid transparent";
+			tdTitulo.style.borderBottom = `2px solid ${tableborder}`;
+
+		    tdTitulo.textContent = `MAPA DE INTERVENÇÕES - ${nomesMeses[mes].toUpperCase()}`;
+		  	tdTitulo.style.fontSize = "18px";
+		   	tdTitulo.style.padding = "2px 0px 10px 0px";
+		  	trTitulo.appendChild(tdTitulo);
+		   	thead.appendChild(trTitulo);
+
+		   	// ======= Segunda linha: cabeçalho dias =======
+		  	const trHead = document.createElement("tr");
+
+		    // Célula "Interventor"
+		    const thMes = document.createElement("th");
+		    thMes.textContent = "INTERVENTOR";
+ 		   thMes.style.fontSize = "13px";
+		    thMes.style.textAlign = "right";
+		    thMes.style.padding = "4px 10px";
+		    thMes.style.width = "150px";
+		    thMes.style.minWidth = "150px";
+		    thMes.style.maxWidth = "150px";
+		    thMes.style.border = `2px solid ${tableborder}`;
+		    thMes.style.borderBottom = "3px double #000";
+		    thMes.style.backgroundColor = backgroundTableHeadersMes;
+		    thMes.style.fontWeight = "bold";
+ 		   trHead.appendChild(thMes);
+
+  		  // Dias do mês
+  		  for (let d = 1; d <= ultimoDia.getDate(); d++) {
+  		      const th = document.createElement("th");
+  		      th.textContent = d;
+  		      th.style.fontSize = "13px";
+ 		       th.style.padding = "2px";
+ 		       th.style.width = "20px";
+		        th.style.height = "26px";
+		        th.style.minWidth = "20px";
+		        th.style.maxWidth = "20px";
+		        th.style.backgroundColor = backgroundTableHeadersMes;
+		        th.style.borderRight = `2px solid ${tableborder}`;
+        		th.style.borderBottom = "3px double #000";
+		        trHead.appendChild(th);
+		    }
+
+ 		   thead.appendChild(trHead);
+ 		   tabela.appendChild(thead);
+
+ 		   // ====== CORPO DA TABELA ======
+ 		   const tbody = document.createElement("tbody");
+
+ 		   // Monta linhas por técnico
+ 		   dados.tecnicos.forEach(tecnico => {
+ 		   	const tarefasDoTecnico = dados.tarefas
+ 		       		.filter(t => t.tecnico === tecnico.nome &&
+ 		              		new Date(t.data_inicio).getFullYear() === ano &&
+ 		                 	new Date(t.data_inicio).getMonth() === mes)
+ 		           	.sort((a, b) => new Date(a.data_inicio) - new Date(b.data_inicio));
+
+  		     	const tr = document.createElement("tr");
+
+  		     	// células dos nomes dos interventores
+  		     	const tdNome = document.createElement("td");
+  		     	tdNome.textContent = tecnico.nome;
+  		     	tdNome.style.fontWeight = "bold";
+  		      tdNome.style.fontSize = "13px";
+  		      tdNome.style.textAlign = "right";
+  		      tdNome.style.padding = "2px 10px 2px 10px";
+ 		       tdNome.style.borderRight = `2px solid ${tableborder}`;
+  		      tdNome.style.borderBottom = `1px dashed ${tableLine}`;
+ 		       tdNome.style.backgroundColor = backgroundTableHeadersStats;
+ 		       tdNome.style.color = "black";
+ 		       tdNome.style.verticalAlign = "bottom";
+  		      tr.appendChild(tdNome);
+
+		      	// Células dos dias do mês
+		        for (let d = 1; d <= ultimoDia.getDate(); d++) {
+		       		const td = document.createElement("td");
+		            td.style.width = "25px";
+		         	td.style.height = "22px";
+		           	td.style.borderRight = `1px solid ${tableborder}`;
+		           	td.style.borderBottom = "1px dashed #808080";
+
+		          	// Identificar se é fim de semana
+		          	const diaAtual = new Date(ano, mes, d);
+		          	const isFimSemana = diaAtual.getDay() === 0 || diaAtual.getDay() === 6;
+
+		          	// Identificar se é feriado
+		         	const isFeriado = dados.feriados.some(f =>
+		            	parseInt(f.dia) === d && parseInt(f.mes) === mes + 1
+		           	);
+
+ 		      		// Definir cor de fundo
+ 		       	if (isFeriado) {
+		            	td.style.backgroundColor = feriadoColor;
+		           	} else if (isFimSemana) {
+		             	td.style.backgroundColor = fdsColor;
+		          	} else {
+		             	td.style.backgroundColor = basicColor;
+		          	}
+
+ 		       	td.style.padding = "0";
+ 		       	td.style.position = "relative";
+		          	tr.appendChild(td);
+
+		         	const tarefasNoDia = tarefasDoTecnico.filter(t =>
+		          		d >= new Date(t.data_inicio).getDate() &&
+		          		d <= new Date(t.data_inicio).getDate() + t.duracao - 1
+		        	);
+
+		         	tarefasNoDia.forEach(tarefaDia => {
+		        		if (d === new Date(tarefaDia.data_inicio).getDate()) {
+		                	const tipoInfo = dados.tiposTarefa.find(tp => tp.tipo === tarefaDia.tipo);
+		             		const barra = document.createElement("div");
+		              		barra.classList.add("barra-tarefa");
+		                	barra.style.position = "absolute";
+		                 	barra.style.left = "0";
+		                	barra.style.top = "2px";
+		                    barra.style.height = "16px";
+		                  	barra.style.width = `${tarefaDia.duracao * 25}px`;
+		                  	barra.style.borderRadius = "4px";
+		                 	barra.style.borderBottom = `1px solid ${tableborder}`;
+		                   	barra.style.boxShadow = "0px 2px 4px rgba(0,0,0,0.6)";
+		                  	barra.style.zIndex = "1";
+
+ 		             		// Transparência dias sobrepostos
+ 		                  	let sobreposicoes = [];
+ 		                 	for (let i = 0; i < tarefaDia.duracao; i++) {
+ 		                  		const diaAtual2 = new Date(tarefaDia.data_inicio).getDate() + i;
+ 		                		const colisao = tarefasNoDia.filter(t =>
+ 		                      		t !== tarefaDia &&
+ 		                         	diaAtual2 >= new Date(t.data_inicio).getDate() &&
+		                          	diaAtual2 <= new Date(t.data_inicio).getDate() + t.duracao - 1
+		                      	);
+		                       	sobreposicoes.push(colisao.length);
+ 		                   }
+
+		                   	const coresDias = sobreposicoes.map(qtd =>
+		                  		qtd > 0 ? (tipoInfo?.cor + "99") : tipoInfo?.cor
+		                 	);
+
+ 		                	const gradiente = coresDias.map((cor, idx) => {
+		                  		const inicio = (idx / tarefaDia.duracao) * 100;
+		                    	const fim = ((idx + 1) / tarefaDia.duracao) * 100;
+		                      	return `${cor} ${inicio}%, ${cor} ${fim}%`;
+		                  	}).join(", ");
+		                	barra.style.background = `linear-gradient(to right, ${gradiente})`;
+
+		                 	// Contador sobreposição
+		                 	const indicesSobrepostos = sobreposicoes
+		                  		.map((qtd, idx) => qtd > 0 ? idx : -1)
+		                   		.filter(idx => idx >= 0);
+		
+		                  	if (indicesSobrepostos.length > 0) {
+		                  		const contador = document.createElement("span");
+		                       	const totalSobrepostos = Math.max(...indicesSobrepostos.map(i => sobreposicoes[i])) + 1;
+		                       	contador.textContent = `${totalSobrepostos}x`;
+		                    	contador.style.position = "absolute";
+
+ 		                     	const primeiroDia = indicesSobrepostos[0];
+ 		                      	const ultimoDiaIdx = indicesSobrepostos[indicesSobrepostos.length - 1];
+ 		                    	const meioSobreposicao = Math.floor((primeiroDia + ultimoDiaIdx) / 2);
+
+		                      	contador.style.left = `${meioSobreposicao * 24 + 12}px`;
+		                     	contador.style.top = "50%";
+		                     	contador.style.transform = "translate(-50%, -50%)";
+		                       	contador.style.color = "#000";
+		                       	contador.style.fontWeight = "bold";
+		                       	contador.style.fontSize = "12px";
+		                        contador.style.pointerEvents = "none";
+ 		                      	barra.appendChild(contador);
+		                 	}
+
+		                 	const tarefasSobrepostas = tarefasNoDia.map(t => `${t.cliente} (${t.tipo}) -> ${t.duracao} dia(s)`);
+		                 	barra.title = tarefasSobrepostas.join("\n");
+
+		                	td.appendChild(barra);
+		             	}
+		       		});
+		    	}
+
+		    	tbody.appendChild(tr);
+
+		     	});
+
+		   		tabela.appendChild(tbody);
+
+		    	// ======= Rodapé: legenda =======
+		    	const trLegenda = document.createElement("tr");
+		    	const tdLegenda = document.createElement("td");
+		    	tdLegenda.colSpan = totalColunas;
+		    	tdLegenda.style.padding = "4px 2px";
+
+		    	tdLegenda.style.borderTop = `2px solid ${tableborder}`;
+		    	tdLegenda.style.borderLeft = "2px solid transparent";
+		    	tdLegenda.style.borderRight = "2px solid transparent";
+		    	tdLegenda.style.borderBottom = "2px solid transparent";
+
+		    	const legendaGantt = document.createElement("div");
+		    	legendaGantt.style.display = "flex";
+		    	legendaGantt.style.flexWrap = "wrap";
+		    	legendaGantt.style.gap = "12px";
+		
+		    	dados.tiposTarefa.forEach(tp => {
+		       		const item = document.createElement("div");
+		        	item.style.display = "flex";
+		        	item.style.alignItems = "center";
+		        	item.style.gap = "4px";
+		
+		        	const bola = document.createElement("span");
+		        	bola.style.width = "14px";
+		        	bola.style.height = "14px";
+ 		       		bola.style.borderRadius = "30%";
+        			bola.style.backgroundColor = tp.cor;
+        			bola.style.display = "inline-block";
+        			bola.style.border = `1px solid ${tableborder}`;
+
+        			const texto = document.createElement("span");
+        			texto.textContent = tp.tipo;
+        			texto.style.fontSize = "13px";
+		
+        			item.appendChild(bola);
+        			item.appendChild(texto);
+        			legendaGantt.appendChild(item);
+    			});
+
+    			tdLegenda.appendChild(legendaGantt);
+    			trLegenda.appendChild(tdLegenda);
+    			tabela.appendChild(trLegenda);
+
+		    	// ====== Insere tabela no popup ======
+		    	ganttContent.appendChild(tabela);
+		}
+
+
         // --- Clique no botão GANTT: monta o diagrama do mês e mostra o popup ---
         ganttBtn.addEventListener("click", (e) => {
             e.stopPropagation(); // evita que o clique "vaze" e feche o popup via document click
-            // limpa conteúdo anterior
-            ganttContent.innerHTML = `<h3 style="text-align:center;">MAPA DE INTERVENÇÕES - ${nomesMeses[mes].toUpperCase()}</h3>`;
-
-            // Construção da tabela Gantt (mantive a lógica original)
-            const tabela = document.createElement("table");
-            tabela.style.borderCollapse = "collapse";
-            tabela.style.width = "100%";
-            tabela.style.border = `2px solid ${tableborder}`;
-
-            const thead = document.createElement("thead");
-            const trHead = document.createElement("tr");
-
-            // célula "interventor"
-            const thMes = document.createElement("th");
-            thMes.textContent = "INTERVENTOR";
-            thMes.style.fontSize = "13px";
-            thMes.style.textAlign = "right";
-            thMes.style.padding = "4px 10px 4px 10px";
-            thMes.style.width = "150px";
-            thMes.style.minWidth = "150px";
-            thMes.style.maxWidth = "150px";
-            thMes.style.border = `2px solid ${tableborder}`;
-            thMes.style.borderBottom = "3px double #000";
-            thMes.style.backgroundColor = backgroundTableHeadersMes;
-            thMes.style.fontWeight = "bold";
-            trHead.appendChild(thMes);
-
-            // dias no topo da tabela
-            for (let d = 1; d <= ultimoDia.getDate(); d++) {
-                const th = document.createElement("th");
-                th.textContent = d;
-                th.style.fontSize = "13px";
-                th.style.padding = "2px";
-                th.style.width = "20px";
-                th.style.height = "26px";
-                th.style.minWidth = "20px";
-                th.style.maxWidth = "20px";
-                th.style.backgroundColor = backgroundTableHeadersMes;
-                th.style.borderRight = `2px solid ${tableborder}`;
-                th.style.borderBottom = "3px double #000";
-                trHead.appendChild(th);
-            }
-
-            thead.appendChild(trHead);
-            tabela.appendChild(thead);
-
-            const tbody = document.createElement("tbody");
-
-            // Monta linhas por técnico
-            dados.tecnicos.forEach(tecnico => {
-                const tarefasDoTecnico = dados.tarefas
-                    .filter(t => t.tecnico === tecnico.nome &&
-                                 new Date(t.data_inicio).getFullYear() === ano &&
-                                 new Date(t.data_inicio).getMonth() === mes)
-                    .sort((a, b) => new Date(a.data_inicio) - new Date(b.data_inicio));
-
-                const tr = document.createElement("tr");
-
-                // células dos nomes dos interventores
-                const tdNome = document.createElement("td");
-                tdNome.textContent = tecnico.nome;
-                tdNome.style.fontWeight = "bold";
-                tdNome.style.fontSize = "13px";
-                tdNome.style.textAlign = "right";
-                tdNome.style.padding = "2px 10px 2px 10px";
-                tdNome.style.borderRight = `2px solid ${tableborder}`;
-                tdNome.style.borderBottom = `1px dashed ${tableLine}`;
-                tdNome.style.backgroundColor = backgroundTableHeadersStats;
-                tdNome.style.color = "black";
-                tdNome.style.verticalAlign = "bottom";
-                tr.appendChild(tdNome);
-
-                // Células dos dias do mês
-                for (let d = 1; d <= ultimoDia.getDate(); d++) {
-                    const td = document.createElement("td");
-                    td.style.width = "25px";
-                    td.style.height = "22px";
-                    td.style.borderRight = `1px solid ${tableborder}`;
-                    td.style.borderBottom = "1px dashed #808080";
-
-                    // Identificar se é fim de semana
-                    const diaAtual = new Date(ano, mes, d);
-                    const isFimSemana = diaAtual.getDay() === 0 || diaAtual.getDay() === 6;
-
-                    // Identificar se é feriado
-                    const isFeriado = dados.feriados.some(f =>
-                        parseInt(f.dia) === d && parseInt(f.mes) === mes + 1
-                    );
-
-                    // Definir cor de fundo
-                    if (isFeriado) {
-                        td.style.backgroundColor = feriadoColor;
-                    } else if (isFimSemana) {
-                        td.style.backgroundColor = fdsColor;
-                    } else {
-                        td.style.backgroundColor = basicColor;
-                    }
-
-                    td.style.padding = "0";
-                    td.style.position = "relative";
-                    tr.appendChild(td);
-
-                    const tarefasNoDia = tarefasDoTecnico.filter(t =>
-                        d >= new Date(t.data_inicio).getDate() &&
-                        d <= new Date(t.data_inicio).getDate() + t.duracao - 1
-                    );
-
-                    tarefasNoDia.forEach(tarefaDia => {
-                        if (d === new Date(tarefaDia.data_inicio).getDate()) {
-                            const tipoInfo = dados.tiposTarefa.find(tp => tp.tipo === tarefaDia.tipo);
-                            const barra = document.createElement("div");
-                            barra.classList.add("barra-tarefa");
-                            barra.style.position = "absolute";
-                            barra.style.left = "0";
-                            barra.style.top = "2px";
-                            barra.style.height = "16px";
-                            barra.style.width = `${tarefaDia.duracao * 25}px`;
-                            barra.style.borderRadius = "4px";
-                            barra.style.borderBottom = `1px solid ${tableborder}`;
-                            barra.style.boxShadow = "0px 2px 4px rgba(0,0,0,0.6)";
-                            barra.style.zIndex = "1";
-
-                            // Transparência dias sobrepostos
-                            let sobreposicoes = [];
-                            for (let i = 0; i < tarefaDia.duracao; i++) {
-                                const diaAtual2 = new Date(tarefaDia.data_inicio).getDate() + i;
-                                const colisao = tarefasNoDia.filter(t =>
-                                    t !== tarefaDia &&
-                                    diaAtual2 >= new Date(t.data_inicio).getDate() &&
-                                    diaAtual2 <= new Date(t.data_inicio).getDate() + t.duracao - 1
-                                );
-                                sobreposicoes.push(colisao.length);
-                            }
-
-                            const coresDias = sobreposicoes.map(qtd =>
-                                qtd > 0 ? (tipoInfo?.cor + "99") : tipoInfo?.cor
-                            );
-
-                            const gradiente = coresDias.map((cor, idx) => {
-                                const inicio = (idx / tarefaDia.duracao) * 100;
-                                const fim = ((idx + 1) / tarefaDia.duracao) * 100;
-                                return `${cor} ${inicio}%, ${cor} ${fim}%`;
-                            }).join(", ");
-                            barra.style.background = `linear-gradient(to right, ${gradiente})`;
-
-                            // Contador sobreposição
-                            const indicesSobrepostos = sobreposicoes
-                                .map((qtd, idx) => qtd > 0 ? idx : -1)
-                                .filter(idx => idx >= 0);
-
-                            if (indicesSobrepostos.length > 0) {
-                                const contador = document.createElement("span");
-                                const totalSobrepostos = Math.max(...indicesSobrepostos.map(i => sobreposicoes[i])) + 1;
-                                contador.textContent = `${totalSobrepostos}x`;
-                                contador.style.position = "absolute";
-
-                                const primeiroDia = indicesSobrepostos[0];
-                                const ultimoDiaIdx = indicesSobrepostos[indicesSobrepostos.length - 1];
-                                const meioSobreposicao = Math.floor((primeiroDia + ultimoDiaIdx) / 2);
-
-                                contador.style.left = `${meioSobreposicao * 24 + 12}px`;
-                                contador.style.top = "50%";
-                                contador.style.transform = "translate(-50%, -50%)";
-                                contador.style.color = "#000";
-                                contador.style.fontWeight = "bold";
-                                contador.style.fontSize = "12px";
-                                contador.style.pointerEvents = "none";
-                                barra.appendChild(contador);
-                            }
-
-                            const tarefasSobrepostas = tarefasNoDia.map(t => `${t.cliente} (${t.tipo}) -> ${t.duracao} dia(s)`);
-                            barra.title = tarefasSobrepostas.join("\n");
-
-                            td.appendChild(barra);
-                        }
-                    });
-                }
-
-                tbody.appendChild(tr);
-
-            });
-
-            tabela.appendChild(tbody);
-            ganttContent.appendChild(tabela);
-
+            
+            // Se popup já estiver aberto, não faz nada
+    		if (popupGanttAberto) return;
+    		
+    		popupGanttAberto = true;
+            montarTabelaMesGantt();
+        
             // Mostra o popup
             ganttPopup2.style.display = "block";
 
-            // Rodapé legenda do Gantt
-            const legendaGantt = document.createElement("div");
-            legendaGantt.style.display = "flex";
-            legendaGantt.style.flexWrap = "wrap";
-            legendaGantt.style.marginTop = "12px";
-            legendaGantt.style.marginBottom = "6px";
-            legendaGantt.style.gap = "16px";
-
-            dados.tiposTarefa.forEach(tp => {
-                const item = document.createElement("div");
-                item.style.display = "flex";
-                item.style.alignItems = "bottom";
-                item.style.gap = "4px";
-
-                const bola = document.createElement("span");
-                bola.style.width = "14px";
-                bola.style.height = "14px";
-                bola.style.borderRadius = "30%";
-                bola.style.backgroundColor = tp.cor;
-                bola.style.display = "inline-block";
-                bola.style.borderBottom = `1px solid ${tableborder}`;
-                bola.style.boxShadow = "0px 2px 4px rgba(0,0,0,0.6)";
-
-                const texto = document.createElement("span");
-                texto.textContent = tp.tipo;
-                texto.style.fontSize = "14px";
-
-                item.appendChild(bola);
-                item.appendChild(texto);
-                legendaGantt.appendChild(item);
-            });
-
-            ganttContent.appendChild(legendaGantt);
-
-            // Fecha ao clicar fora do popup:
-			const outsideClickListener = (ev) => {
-    		// se o clique for fora do popup e fora do botão, fecha
-    		if (!ganttPopup2.contains(ev.target) && ev.target !== ganttBtn) {
-        		// Fecha popup
-        		ganttPopup2.style.display = "none";
-
-        		// Restaura altura original
-        		ganttPopup2.style.height = ganttPopup2.dataset.originalHeight;
-				ganttPopup2.style.maxHeight = ganttPopup2.dataset.originalMaxHeight;
-				
-				// Elimina molduras criadas
-				const existingCanvas = document.getElementById('canvasMoldura');
-        		existingCanvas.remove();
-
-        		// Recolhe stats se estavam expandidas
-        		popupExpanded = false;
-        		const statsContainer = ganttContent.querySelector("#gantt-estatisticas-title");
-        		if (statsContainer) statsContainer.remove();
-
-        		// Destrói gráfico se existir
-        		if (chartInstance) {
-            		try { chartInstance.destroy(); } catch(e) {}
-            		chartInstance = null;
-       		 }
-        		document.removeEventListener("click", outsideClickListener);
-    		}
-		};
-            // remove listener anterior (precaução) e adiciona novo
-            document.removeEventListener("click", outsideClickListener);
-            document.addEventListener("click", outsideClickListener);
+           
         });
-
-        // Ao clicar no próprio popup não o feche (já prevenimos, mas reforço)
-        ganttPopup2.addEventListener("click", (ev) => ev.stopPropagation());
 
         // Inserir mês finalizado no calendário
         calendarioContainer.appendChild(divMes);
@@ -1609,16 +1525,15 @@ function ajustarColunasCalendario() {
     }
   } else {
     // Se não for telemóvel (portátil/desktop)
-    if (larguraTela < 800) {
+    if (larguraTela <= 1000) {
       calendario.style.gridTemplateColumns = 'repeat(1, 1fr)';
-    } else if (larguraTela < 1200) {
+    } else if (larguraTela <= 1200) {
       calendario.style.gridTemplateColumns = 'repeat(2, 1fr)';
-    } else {
+    } else if (larguraTela >= 1400) {
       calendario.style.gridTemplateColumns = 'repeat(3, 1fr)';
     }
   }
 }
-
 
 // Executa após o DOM estar pronto
 document.addEventListener('DOMContentLoaded', () => {
