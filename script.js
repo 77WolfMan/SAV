@@ -13,7 +13,7 @@
 // ============================================================================
 
 // ============================================================================
-//0. CONSTANTES BLOBAIS
+// 0. CONSTANTES GLOBAIS
 // ============================================================================
 const backgroundPopup = "#ddd";
 const backgroundBotaoStats = "#a9a9a9";
@@ -25,17 +25,45 @@ const feriadoColor = "#fff4cc";
 const fdsColor = "#e0e0e0";
 const basicColor = "#f7f7f7";
 const backgroundTableHeadersMes = "#76d6ff";
+let ganttPopup2 = null;      // referência ao popup atual
 let popupGanttAberto = false; // indica se o popup está aberto
 
 // ============================================================================
-// 1. CONTÊINOS PRINCIPAIS
+// 1. CONSTANTES PRINCIPAIS
 // ============================================================================
 const calendarioContainer = document.getElementById("calendario");
 const legendaContainer = document.getElementById("legenda");
 
+// ============================================================================
+// 2. FUNÇÃO QUE PERMITE ARRASTAR JANELAS/POPUPS
+// ============================================================================
+function tornarDraggable(element) {
+    let isDragging = false;
+    let offsetX, offsetY;
+
+    element.addEventListener("mousedown", (e) => {
+        if (e.target.tagName === "CANVAS" || e.target.closest("canvas")) return; // evita conflito com gráficos
+        isDragging = true;
+        offsetX = e.clientX - element.getBoundingClientRect().left;
+        offsetY = e.clientY - element.getBoundingClientRect().top;
+        element.style.cursor = "grabbing";
+    });
+
+    document.addEventListener("mousemove", (e) => {
+        if (!isDragging) return;
+        element.style.left = `${e.clientX - offsetX}px`;
+        element.style.top = `${e.clientY - offsetY}px`;
+        element.style.transform = ""; // remove centralização fixa
+    });
+
+    document.addEventListener("mouseup", () => {
+        isDragging = false;
+        element.style.cursor = "grab";
+    });
+}
 
 // ============================================================================
-// 2. FUNÇÃO PRINCIPAL: CARREGAR DADOS
+// 3. FUNÇÃO PRINCIPAL: CARREGAR DADOS
 // ============================================================================
 async function carregarDados() {
     try {
@@ -86,36 +114,8 @@ async function carregarDados() {
     }
 }
 
-// =========================================================================
-// 3. FUNÇÃO UTILITÁRIA: Cria canvas sobreposto no popup Gantt
-// =========================================================================
-function initGanttOverlay(popup) {
-    // Garante que seja o elemento correto
-    if (!popup) return null;
-
-    // Cria canvas apenas se ainda não existir
-    let canvas = popup.querySelector('#canvasMoldura');
-    if (!canvas) {
-        canvas = document.createElement('canvas');
-        canvas.id = 'canvasMoldura';
-        canvas.style.position = 'absolute';
-        canvas.style.left = '0';
-        canvas.style.top = '0';
-        canvas.style.width = '100%';
-        canvas.style.height = '100%';
-        canvas.style.pointerEvents = 'none'; // não bloqueia clique
-        popup.appendChild(canvas);
-    }
-
-    // Ajusta o tamanho real do canvas (importante para o contexto 2D)
-    canvas.width = popup.clientWidth;
-    canvas.height = popup.clientHeight;
-
-    return canvas.getContext('2d');
-}
-
 // ============================================================================
-// 6. FUNÇÃO: GERAR LEGENDA
+// 4. FUNÇÃO: GERAR LEGENDA
 // ============================================================================
 function gerarLegenda(tiposTarefa) {
     legendaContainer.innerHTML = "";
@@ -128,7 +128,7 @@ function gerarLegenda(tiposTarefa) {
 }
 
 // ============================================================================
-// 7. FUNÇÃO: GERAR CALENDÁRIO
+// 5. FUNÇÃO: GERAR CALENDÁRIO
 // ============================================================================
 function gerarCalendario(dados) {
     calendarioContainer.innerHTML = "";
@@ -307,7 +307,7 @@ function gerarCalendario(dados) {
         divMes.appendChild(diasGrid);
 
         // ============================================================================
-        //  8. POPUP GANTT E CONTROLES
+        //  6. POPUP GANTT E CONTROLES
         // ============================================================================
 
         // --- Botão GANTT (ícone) ---
@@ -395,6 +395,9 @@ function gerarCalendario(dados) {
     		if (popupExpanded) {
         		// Expande popup para mostrar stats
         		ganttPopup2.style.height = "770px";
+        		ganttPopup2.style.top = "50%";
+        		ganttPopup2.style.left = "50%";
+        		ganttPopup2.style.transform = "translate(-50%, -50%)";
         		
         		const linhasPadding = "2px";	// Padding ara as linhas da tabela estatísticas
 
@@ -724,7 +727,7 @@ function gerarCalendario(dados) {
                 ganttContent.appendChild(tituloStats);
 
                 // ============================================================================
-                // GRÁFICOS COM CHART.JS
+                // 7. GRÁFICOS COM CHART.JS
                 // ============================================================================
 				
 				// === TABELA PRINCIPAL DOS GRÁFICOS ===
@@ -819,7 +822,7 @@ function gerarCalendario(dados) {
                 
 
                 // ===========================================================================
-				// CÁLCULO DE DIAS POR TIPO COM SOBREPOSIÇÕES POR TÉCNICO
+				// 8. CÁLCULO DE DIAS POR TIPO COM SOBREPOSIÇÕES POR TÉCNICO
 				// ===========================================================================
 				// Inicializa contadores de dias por número de técnicos
 				let diasNenhumTecnico = 0;
@@ -1090,7 +1093,10 @@ function gerarCalendario(dados) {
             } else {
                 // Fecha o STATS: restaura altura original
 				ganttPopup2.style.height = "300px";
-
+				ganttPopup2.style.top = "50%";
+        		ganttPopup2.style.left = "50%";
+        		ganttPopup2.style.transform = "translate(-50%, -50%)";
+				
 				// Remove completamente o container de stats se existir
 				const statsContainer = ganttContent.querySelector("#gantt-estatisticas-title");
 				if (statsContainer) statsContainer.remove();
@@ -1129,6 +1135,7 @@ function gerarCalendario(dados) {
         		ganttPopup2.style.maxHeight = ganttPopup2.dataset.originalMaxHeight;
         		limparPopupGantt() 
         		popupGanttAberto = false; // marca como fechado
+            	ganttPopup2 = null;
     		}
 		});
 
@@ -1417,18 +1424,26 @@ function gerarCalendario(dados) {
         ganttBtn.addEventListener("click", (e) => {
             e.stopPropagation(); // evita que o clique "vaze" e feche o popup via document click
             
-            // Se popup já estiver aberto, não faz nada
-    		if (popupGanttAberto) return;
-    		
+    		// Se popup já estiver aberto, fecha antes de abrir outro
+    		if (popupGanttAberto && ganttPopup2) {
+        		ganttPopup2.remove();     // remove do DOM
+        		popupGanttAberto = false;
+        		ganttPopup2 = null;
+    		}
+
     		popupGanttAberto = true;
             montarTabelaMesGantt();
         
-            // Mostra o popup
+            // Mostra e centra o popup
+            ganttPopup2.style.top = "50%";
+        	ganttPopup2.style.left = "50%";
+        	ganttPopup2.style.transform = "translate(-50%, -50%)";
             ganttPopup2.style.display = "block";
-
-           
         });
 
+        // Torna do popup arrastável
+        tornarDraggable(ganttPopup2);
+        
         // Inserir mês finalizado no calendário
         calendarioContainer.appendChild(divMes);
     } // fim loop meses
