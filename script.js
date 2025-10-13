@@ -38,15 +38,11 @@ const legendaContainer = document.getElementById("legenda");
 // 2. FUNÇÃO QUE PERMITE ARRASTAR JANELAS/POPUPS
 // ============================================================================
 function tornarDraggable(element, handle = null) {
-    let posX = 0, posY = 0, startX = 0, startY = 0;
+    let startX = 0, startY = 0, origX = 0, origY = 0;
 
-    // Define a área de arraste: barra superior ou popup todo se handle não fornecido
     const dragArea = handle || element;
 
     const dragStart = (e) => {
-        // Ignora clique direito
-        if (e.button && e.button !== 0) return;
-
         e.preventDefault();
         if (e.type === "touchstart") {
             startX = e.touches[0].clientX;
@@ -56,11 +52,17 @@ function tornarDraggable(element, handle = null) {
             startY = e.clientY;
         }
 
-        // Guarda posição inicial
-        posX = element.offsetLeft;
-        posY = element.offsetTop;
+        // Converter posição centralizada em left/top absolutos
+        const rect = element.getBoundingClientRect();
+        origX = rect.left;
+        origY = rect.top;
 
-        // Adiciona listeners
+        // Remove transform apenas após calcular posição inicial
+        element.style.transform = "none";
+        element.style.left = origX + "px";
+        element.style.top  = origY + "px";
+        element.style.position = "fixed";
+
         document.addEventListener("mousemove", dragMove);
         document.addEventListener("mouseup", dragEnd);
         document.addEventListener("touchmove", dragMove, { passive: false });
@@ -69,12 +71,11 @@ function tornarDraggable(element, handle = null) {
 
     const dragMove = (e) => {
         e.preventDefault();
-        let clientX = e.type.startsWith("touch") ? e.touches[0].clientX : e.clientX;
-        let clientY = e.type.startsWith("touch") ? e.touches[0].clientY : e.clientY;
+        const clientX = e.type.startsWith("touch") ? e.touches[0].clientX : e.clientX;
+        const clientY = e.type.startsWith("touch") ? e.touches[0].clientY : e.clientY;
 
-        element.style.left = posX + (clientX - startX) + "px";
-        element.style.top = posY + (clientY - startY) + "px";
-        element.style.transform = "none"; // remove centralização
+        element.style.left = origX + (clientX - startX) + "px";
+        element.style.top  = origY + (clientY - startY) + "px";
     };
 
     const dragEnd = () => {
