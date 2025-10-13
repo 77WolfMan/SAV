@@ -37,29 +37,55 @@ const legendaContainer = document.getElementById("legenda");
 // ============================================================================
 // 2. FUNÇÃO QUE PERMITE ARRASTAR JANELAS/POPUPS
 // ============================================================================
-function tornarDraggable(element) {
-    let isDragging = false;
-    let offsetX, offsetY;
+function tornarDraggable(element, handle = null) {
+    let posX = 0, posY = 0, startX = 0, startY = 0;
 
-    element.addEventListener("mousedown", (e) => {
-        if (e.target.tagName === "CANVAS" || e.target.closest("canvas")) return; // evita conflito com gráficos
-        isDragging = true;
-        offsetX = e.clientX - element.getBoundingClientRect().left;
-        offsetY = e.clientY - element.getBoundingClientRect().top;
-        element.style.cursor = "grabbing";
-    });
+    // Define a área de arraste: barra superior ou popup todo se handle não fornecido
+    const dragArea = handle || element;
 
-    document.addEventListener("mousemove", (e) => {
-        if (!isDragging) return;
-        element.style.left = `${e.clientX - offsetX}px`;
-        element.style.top = `${e.clientY - offsetY}px`;
-        element.style.transform = ""; // remove centralização fixa
-    });
+    const dragStart = (e) => {
+        // Ignora clique direito
+        if (e.button && e.button !== 0) return;
 
-    document.addEventListener("mouseup", () => {
-        isDragging = false;
-        element.style.cursor = "grab";
-    });
+        e.preventDefault();
+        if (e.type === "touchstart") {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        } else {
+            startX = e.clientX;
+            startY = e.clientY;
+        }
+
+        // Guarda posição inicial
+        posX = element.offsetLeft;
+        posY = element.offsetTop;
+
+        // Adiciona listeners
+        document.addEventListener("mousemove", dragMove);
+        document.addEventListener("mouseup", dragEnd);
+        document.addEventListener("touchmove", dragMove, { passive: false });
+        document.addEventListener("touchend", dragEnd);
+    };
+
+    const dragMove = (e) => {
+        e.preventDefault();
+        let clientX = e.type.startsWith("touch") ? e.touches[0].clientX : e.clientX;
+        let clientY = e.type.startsWith("touch") ? e.touches[0].clientY : e.clientY;
+
+        element.style.left = posX + (clientX - startX) + "px";
+        element.style.top = posY + (clientY - startY) + "px";
+        element.style.transform = "none"; // remove centralização
+    };
+
+    const dragEnd = () => {
+        document.removeEventListener("mousemove", dragMove);
+        document.removeEventListener("mouseup", dragEnd);
+        document.removeEventListener("touchmove", dragMove);
+        document.removeEventListener("touchend", dragEnd);
+    };
+
+    dragArea.addEventListener("mousedown", dragStart);
+    dragArea.addEventListener("touchstart", dragStart, { passive: false });
 }
 
 // ============================================================================
