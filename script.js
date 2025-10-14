@@ -1698,4 +1698,4 @@ function emularCliqueEmToque(elemento) {
 }
 
 // Aplica ao botão "stats" (ou Gantt, conforme o caso)
-emularCliqueEmToque(ganttBtn);
+emularCliqueEmToque(botaoStats);
