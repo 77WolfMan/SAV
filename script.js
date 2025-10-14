@@ -27,6 +27,7 @@ const basicColor = "#f7f7f7";
 const backgroundTableHeadersMes = "#76d6ff";
 let ganttPopup2 = null;      // referência ao popup atual
 let popupGanttAberto = false; // indica se o popup está aberto
+let tooltipGanttAtivado = false;
 
 // ============================================================================
 // 1. CONSTANTES PRINCIPAIS
@@ -112,7 +113,7 @@ function emularCliqueEmToque(elemento) {
 // 4. COMPATIBILIZAR O TOQUE em BARRAS do MÊS, PARA MOBILE/TABLETS
 // ============================================================================
 // Função principal para ativar tooltips nas barras do Gantt
-function ativarTooltipGantt() {
+/*function ativarTooltipGantt() {
     const barras = document.querySelectorAll(".barra-tarefa");
 
     barras.forEach(barra => {
@@ -138,6 +139,23 @@ function ativarTooltipGantt() {
             }
         };
     });
+}*/
+
+function ativarTooltipGantt() {
+    const ua = navigator.userAgent.toLowerCase();
+    const isMobile = /mobile|android|iphone|ipad|ipod|blackberry|iemobile|opera mini/.test(ua);
+
+    // Se for desktop, não ativar listener de toque
+    if (!isMobile) return;
+
+    // Código que ativa tooltip no toque
+    const barras = document.querySelectorAll('.barra-tarefa');
+    barras.forEach(bar => {
+        bar.addEventListener('touchstart', (e) => {
+            e.stopPropagation();
+            mostrarTooltip(bar); // função que mostra tooltip
+        });
+    });
 }
 
 function mostrarTooltip(barra) {
@@ -160,7 +178,7 @@ function mostrarTooltip(barra) {
     tooltip.style.textAlign = "center";
     tooltip.style.left = rect.left + rect.width / 2 + "px";
     tooltip.style.top = rect.top - 30 + "px";
-    tooltip.style.transform = "translateX(-50%)";
+    tooltip.style.transform = "translateX(+5%)";
     tooltip.style.pointerEvents = "none";
 
     document.body.appendChild(tooltip);
@@ -192,7 +210,7 @@ function adicionarAssinaturaLegenda(container) {
     assinatura.style.fontWeight = "normal";
     assinatura.style.paddingLeft = "12px";
     assinatura.style.whiteSpace = "nowrap";
-    assinatura.textContent = "V.1I << By DrWE >>";
+    assinatura.textContent = "V.1J << By DrWE >>";
 
     container.appendChild(assinatura);
 }
@@ -1585,8 +1603,10 @@ function gerarCalendario(dados) {
 		   		tabela.appendChild(tbody);
 
 
-// Ativa tooltip nas novas barras
-ativarTooltipGantt();
+if (!tooltipGanttAtivado) {
+    ativarTooltipGantt();
+    tooltipGanttAtivado = true;
+}
 
 		    	// ======= Rodapé: legenda =======
 		    	const trLegenda = document.createElement("tr");
@@ -1662,14 +1682,20 @@ ativarTooltipGantt();
     		if (popupGanttAberto) {
         		limparPopupGantt(); // tua função que limpa o conteúdo anterior
         		montarTabelaMesGantt();  // Cria a tabela e adiciona ao DOM
-ativarTooltipGantt();     // Liga os tooltips nas barras recém-criadas
+if (!tooltipGanttAtivado) {
+    ativarTooltipGantt();
+    tooltipGanttAtivado = true;
+}
         		return; // evita duplicar popup
     		}
 
     		// Caso contrário, monta e mostra o popup
     		limparPopupGantt();
     		montarTabelaMesGantt();  // Cria a tabela e adiciona ao DOM
-ativarTooltipGantt();     // Liga os tooltips nas barras recém-criadas
+if (!tooltipGanttAtivado) {
+    ativarTooltipGantt();
+    tooltipGanttAtivado = true;
+}
 
     		ganttPopup2.style.top = "50%";
     		ganttPopup2.style.left = "50%";
