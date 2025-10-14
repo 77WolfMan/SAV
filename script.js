@@ -34,6 +34,8 @@ let popupGanttAberto = false; // indica se o popup está aberto
 const calendarioContainer = document.getElementById("calendario");
 const legendaContainer = document.getElementById("legenda");
 
+const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;  // Detecta se é um dispositivo touch (mobile/tablet)
+
 // ============================================================================
 // 2. FUNÇÃO QUE PERMITE ARRASTAR JANELAS/POPUPS
 // ============================================================================
@@ -115,12 +117,6 @@ function emularCliqueEmToque(elemento) {
 function ativarTooltipGantt() {
     const barras = document.querySelectorAll(".barra-tarefa");
 
-    // Detecta se é um dispositivo touch (mobile/tablet)
-    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    // Detectar telemóvel via userAgent
-  	//const ua = navigator.userAgent.toLowerCase();
-    //const isMobile = /mobile|android|iphone|ipad|ipod|blackberry|iemobile|opera mini/.test(ua);
-
     barras.forEach(barra => {
         // Limpa quaisquer listeners antigos
         barra.onpointerenter = null;
@@ -192,7 +188,7 @@ function adicionarAssinaturaLegenda(container) {
     assinatura.style.fontWeight = "normal";
     assinatura.style.paddingLeft = "12px";
     assinatura.style.whiteSpace = "nowrap";
-    assinatura.textContent = "V.1M << By DrWE >>";
+    assinatura.textContent = "V.1N << By DrWE >>";
 
     container.appendChild(assinatura);
 }
@@ -202,7 +198,9 @@ function adicionarAssinaturaLegenda(container) {
 // ============================================================================
 async function carregarDados() {
     try {
-        /*// Detectar telemóvel via userAgent
+        /*  PARA APRSENTAR NUMA LINHA INICIAL A RESOLUÇÃO REAL VERSUS FISICA E TIPO DE DISPOSITIVO....
+        
+        // Detectar telemóvel via userAgent
   		const ua = navigator.userAgent.toLowerCase();
   		
   		const isMobile = /mobile|android|iphone|ipad|ipod|blackberry|iemobile|opera mini/.test(ua);
@@ -229,7 +227,9 @@ async function carregarDados() {
         }
 
         // Pausa de 1 segundo
-        await new Promise(resolve => setTimeout(resolve, 1)); // 1000 -> 1 segundo*/
+        await new Promise(resolve => setTimeout(resolve, 1000)); // 1000 -> 1 segundo
+        
+        */
 
         // Atualiza o título
         const tituloH1 = document.getElementById("agendaTitulo");
