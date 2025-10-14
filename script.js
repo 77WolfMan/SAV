@@ -229,7 +229,7 @@ async function carregarDados() {
         }
 
         // Pausa de 1 segundo
-        await new Promise(resolve => setTimeout(resolve, 1)); // 1000 -> 1 segundo
+        await new Promise(resolve => setTimeout(resolve, 1000)); // 1000 -> 1 segundo
 
         // Atualiza o título
         const tituloH1 = document.getElementById("agendaTitulo");
