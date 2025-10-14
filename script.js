@@ -90,7 +90,50 @@ function tornarDraggable(element, handle = null) {
 }
 
 // ============================================================================
-// 3. FUNÇÃO PRINCIPAL: CARREGAR DADOS
+// 3. COMPATIBILIZAR CLIQUE NO TOQUE PARA MOBILE/TABLETS
+// ============================================================================
+function emularCliqueEmToque(elemento) {
+    if (!elemento) return;
+
+    // Remove event listeners duplicados
+    elemento.removeEventListener("touchstart", elemento._touchHandler);
+
+    // Cria e associa o handler
+    elemento._touchHandler = function (e) {
+        e.preventDefault(); // impede zoom ou scroll
+        e.stopPropagation(); // impede propagação errada
+        elemento.click(); // emula o clique real
+    };
+
+    elemento.addEventListener("touchstart", elemento._touchHandler);
+}
+
+// Aplica ao botão desejado...
+emularCliqueEmToque(botaoStats);
+
+// ============================================================================
+// 4. FUNÇÃO: ASSINATURA E VERSÃO
+// ============================================================================
+function adicionarAssinaturaLegenda(container) {
+    const assinaturaExistente = container.querySelector(".legenda-assinatura");
+    if (assinaturaExistente) return; // evita duplicar
+
+    const assinatura = document.createElement("div");
+    assinatura.classList.add("legenda-item", "legenda-assinatura");
+    assinatura.style.marginLeft = "auto";
+    assinatura.style.alignSelf = "center";
+    assinatura.style.fontSize = "12px";
+    assinatura.style.color = "#666";
+    assinatura.style.fontWeight = "normal";
+    assinatura.style.paddingLeft = "12px";
+    assinatura.style.whiteSpace = "nowrap";
+    assinatura.textContent = "V.1B << By DrWE >>";
+
+    container.appendChild(assinatura);
+}
+
+// ============================================================================
+// 5. FUNÇÃO PRINCIPAL: CARREGAR DADOS
 // ============================================================================
 async function carregarDados() {
     try {
@@ -132,6 +175,7 @@ async function carregarDados() {
         // Gera o calendário e legenda
         gerarCalendario(dados);
         gerarLegenda(dados.tiposTarefa);
+        adicionarAssinaturaLegenda(legendaContainer);
 
         // Remove a mensagem da resolução (opcional)
         mensagem.remove();
@@ -142,7 +186,7 @@ async function carregarDados() {
 }
 
 // ============================================================================
-// 4. FUNÇÃO: GERAR LEGENDA
+// 6. FUNÇÃO: GERAR LEGENDA
 // ============================================================================
 function gerarLegenda(tiposTarefa) {
     legendaContainer.innerHTML = "";
@@ -155,7 +199,7 @@ function gerarLegenda(tiposTarefa) {
 }
 
 // ============================================================================
-// 5. FUNÇÃO: GERAR CALENDÁRIO
+// 7. FUNÇÃO: GERAR CALENDÁRIO
 // ============================================================================
 function gerarCalendario(dados) {
     calendarioContainer.innerHTML = "";
@@ -334,7 +378,7 @@ function gerarCalendario(dados) {
         divMes.appendChild(diasGrid);
 
         // ============================================================================
-        //  6. POPUP GANTT E CONTROLES
+        //  8. POPUP GANTT E CONTROLES
         // ============================================================================
 
         // --- Botão GANTT (ícone) ---
@@ -754,7 +798,7 @@ function gerarCalendario(dados) {
                 ganttContent.appendChild(tituloStats);
 
                 // ============================================================================
-                // 7. GRÁFICOS COM CHART.JS
+                // 9. GRÁFICOS COM CHART.JS
                 // ============================================================================
 				
 				// === TABELA PRINCIPAL DOS GRÁFICOS ===
@@ -866,7 +910,7 @@ function gerarCalendario(dados) {
                 
 
                 // ===========================================================================
-				// 8. CÁLCULO DE DIAS POR TIPO COM SOBREPOSIÇÕES POR TÉCNICO
+				// 10. CÁLCULO DE DIAS POR TIPO COM SOBREPOSIÇÕES POR TÉCNICO
 				// ===========================================================================
 				// Inicializa contadores de dias por número de técnicos
 				let diasNenhumTecnico = 0;
@@ -1679,23 +1723,3 @@ document.addEventListener('DOMContentLoaded', () => {
   ajustarColunasCalendario();
   window.addEventListener('resize', ajustarColunasCalendario);
 });
-
-// --- Compatibilizar clique com toque (mobile/tablet) ---
-function emularCliqueEmToque(elemento) {
-    let toqueIniciado = false;
-
-    elemento.addEventListener("touchstart", () => {
-        toqueIniciado = true;
-    });
-
-    elemento.addEventListener("touchend", (e) => {
-        if (toqueIniciado) {
-            e.preventDefault(); // evita clique duplo
-            elemento.click();   // emula o clique normal
-            toqueIniciado = false;
-        }
-    });
-}
-
-// Aplica ao botão "stats" (ou Gantt, conforme o caso)
-emularCliqueEmToque(botaoStats);
