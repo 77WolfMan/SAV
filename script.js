@@ -111,53 +111,57 @@ function emularCliqueEmToque(elemento) {
 // ============================================================================
 // 4. COMPATIBILIZAR O TOQUE em BARRAS do MÊS, PARA MOBILE/TABLETS
 // ============================================================================
-function ativarTooltipTouch(selector = ".barra-tarefa") {
-    const barras = document.querySelectorAll(selector);
+function ativarTooltipGantt() {
+    const barras = document.querySelectorAll(".barra-tarefa");
 
     barras.forEach(barra => {
         // Remove listener antigo
-        if (barra._tooltipTouchHandler) {
-            barra.removeEventListener("touchstart", barra._tooltipTouchHandler);
-        }
+        if (barra._tooltipHandler) barra.removeEventListener("mouseover", barra._tooltipHandler);
+        if (barra._tooltipTouch) barra.removeEventListener("touchstart", barra._tooltipTouch);
 
-        barra._tooltipTouchHandler = function(e) {
-            e.stopPropagation();
-
-            const titulo = barra.getAttribute("title");
-            if (!titulo) return;
-
-            // Remove tooltip anterior
-            const t = document.querySelector(".tooltip-touch");
-            if (t) t.remove();
-
-            // Cria tooltip
-            const tooltip = document.createElement("div");
-            tooltip.className = "tooltip-touch";
-            tooltip.innerHTML = titulo.replace(/\n/g, "<br>");
-            tooltip.style.position = "fixed";
-            tooltip.style.zIndex = "9999";
-            tooltip.style.background = "rgba(0,0,0,0.85)";
-            tooltip.style.color = "#fff";
-            tooltip.style.padding = "6px 10px";
-            tooltip.style.borderRadius = "6px";
-            tooltip.style.fontSize = "13px";
-            tooltip.style.textAlign = "center";
-            tooltip.style.pointerEvents = "none";
-
-            // Posiciona no centro da barra
-            const rect = barra.getBoundingClientRect();
-            tooltip.style.left = rect.left + rect.width/2 + "px";
-            tooltip.style.top = rect.top - 30 + "px"; // acima da barra
-            tooltip.style.transform = "translateX(-50%)";
-
-            document.body.appendChild(tooltip);
-
-            // Remove após 2,5s
-            setTimeout(() => tooltip.remove(), 2500);
+        // Desktop: hover
+        barra._tooltipHandler = function(e) {
+            mostrarTooltip(barra);
         };
+        barra.addEventListener("mouseover", barra._tooltipHandler);
 
-        barra.addEventListener("touchstart", barra._tooltipTouchHandler);
+        // Mobile/Tablet: touch
+        barra._tooltipTouch = function(e) {
+            e.stopPropagation();
+            mostrarTooltip(barra);
+        };
+        barra.addEventListener("touchstart", barra._tooltipTouch);
     });
+}
+
+function mostrarTooltip(barra) {
+    const titulo = barra.getAttribute("title");
+    if (!titulo) return;
+
+    // Remove tooltip anterior
+    const t = document.querySelector(".tooltip-touch");
+    if (t) t.remove();
+
+    const rect = barra.getBoundingClientRect();
+    const tooltip = document.createElement("div");
+    tooltip.className = "tooltip-touch";
+    tooltip.innerHTML = titulo.replace(/\n/g, "<br>");
+    tooltip.style.position = "fixed";
+    tooltip.style.zIndex = "9999";
+    tooltip.style.background = "rgba(0,0,0,0.85)";
+    tooltip.style.color = "#fff";
+    tooltip.style.padding = "6px 10px";
+    tooltip.style.borderRadius = "6px";
+    tooltip.style.fontSize = "13px";
+    tooltip.style.textAlign = "center";
+    tooltip.style.left = rect.left + rect.width / 2 + "px";
+    tooltip.style.top = rect.top - 30 + "px";
+    tooltip.style.transform = "translateX(-50%)";
+    tooltip.style.pointerEvents = "none";
+
+    document.body.appendChild(tooltip);
+
+    setTimeout(() => tooltip.remove(), 2500);
 }
 
 // ============================================================================
@@ -176,7 +180,7 @@ function adicionarAssinaturaLegenda(container) {
     assinatura.style.fontWeight = "normal";
     assinatura.style.paddingLeft = "12px";
     assinatura.style.whiteSpace = "nowrap";
-    assinatura.textContent = "V.1E << By DrWE >>";
+    assinatura.textContent = "V.1F << By DrWE >>";
 
     container.appendChild(assinatura);
 }
@@ -1567,7 +1571,7 @@ function gerarCalendario(dados) {
 		     	});
 
 		   		tabela.appendChild(tbody);
-		   		ativarTooltipTouch(".barra-tarefa");
+		   		ativarTooltipGantt();
 
 		    	// ======= Rodapé: legenda =======
 		    	const trLegenda = document.createElement("tr");
