@@ -108,9 +108,6 @@ function emularCliqueEmToque(elemento) {
     elemento.addEventListener("touchstart", elemento._touchHandler);
 }
 
-// Aplica ao botão desejado...
-emularCliqueEmToque(botaoStats);
-
 // ============================================================================
 // 4. FUNÇÃO: ASSINATURA E VERSÃO
 // ============================================================================
@@ -127,7 +124,7 @@ function adicionarAssinaturaLegenda(container) {
     assinatura.style.fontWeight = "normal";
     assinatura.style.paddingLeft = "12px";
     assinatura.style.whiteSpace = "nowrap";
-    assinatura.textContent = "V.1B << By DrWE >>";
+    assinatura.textContent = "V.1C << By DrWE >>";
 
     container.appendChild(assinatura);
 }
@@ -437,6 +434,7 @@ function gerarCalendario(dados) {
         // === Botão STATS dentro do popup (expande e insere estatísticas) ===
         let popupExpanded = false;
         const botaoStats = document.createElement("button");
+		emularCliqueEmToque(botaoStats);
         botaoStats.textContent = "STATS";
         botaoStats.style.position = "absolute";
         botaoStats.style.bottom = "12px";
