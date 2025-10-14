@@ -118,8 +118,8 @@ function ativarTooltipGantt() {
     // Detecta se é um dispositivo touch (mobile/tablet)
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     // Detectar telemóvel via userAgent
-  	const ua = navigator.userAgent.toLowerCase();
-    const isMobile = /mobile|android|iphone|ipad|ipod|blackberry|iemobile|opera mini/.test(ua);
+  	//const ua = navigator.userAgent.toLowerCase();
+    //const isMobile = /mobile|android|iphone|ipad|ipod|blackberry|iemobile|opera mini/.test(ua);
 
     barras.forEach(barra => {
         // Limpa quaisquer listeners antigos
@@ -127,7 +127,7 @@ function ativarTooltipGantt() {
         barra.onpointerleave = null;
         barra.onpointerdown = null;
 
-        if (isMobile) {
+        if (isTouchDevice) {
             // Mobile / Tablet → tooltip ao toque
             barra.onpointerdown = function(e) {
                 if (e.pointerType === 'touch' || e.pointerType === 'pen') {
@@ -192,7 +192,7 @@ function adicionarAssinaturaLegenda(container) {
     assinatura.style.fontWeight = "normal";
     assinatura.style.paddingLeft = "12px";
     assinatura.style.whiteSpace = "nowrap";
-    assinatura.textContent = "V.1L << By DrWE >>";
+    assinatura.textContent = "V.1M << By DrWE >>";
 
     container.appendChild(assinatura);
 }
@@ -202,7 +202,7 @@ function adicionarAssinaturaLegenda(container) {
 // ============================================================================
 async function carregarDados() {
     try {
-        // Detectar telemóvel via userAgent
+        /*// Detectar telemóvel via userAgent
   		const ua = navigator.userAgent.toLowerCase();
   		
   		const isMobile = /mobile|android|iphone|ipad|ipod|blackberry|iemobile|opera mini/.test(ua);
@@ -229,7 +229,7 @@ async function carregarDados() {
         }
 
         // Pausa de 1 segundo
-        await new Promise(resolve => setTimeout(resolve, 1000)); // 1000 -> 1 segundo
+        await new Promise(resolve => setTimeout(resolve, 1)); // 1000 -> 1 segundo*/
 
         // Atualiza o título
         const tituloH1 = document.getElementById("agendaTitulo");
