@@ -25,6 +25,7 @@ const feriadoColor = "#fff4cc";
 const fdsColor = "#e0e0e0";
 const basicColor = "#f7f7f7";
 const backgroundTableHeadersMes = "#76d6ff";
+let quantidadeTecnicos = 0;
 let ganttPopup2 = null;      // referência ao popup atual
 let popupGanttAberto = false; // indica se o popup está aberto
 
@@ -188,11 +189,13 @@ function adicionarAssinaturaLegenda(container) {
     assinatura.style.fontWeight = "normal";
     assinatura.style.paddingLeft = "12px";
     assinatura.style.whiteSpace = "nowrap";
+    assinatura.textContent = "Version 1.A";
+    
     if (isTouchDevice) {
-    	assinatura.textContent = "V.1OT [By DrWE]";
+    	assinatura.textContent += "/t [DrWE © 2025 ]"; // Para simbolizar versão a correr com Touchscreen
     }
     else {
-    	assinatura.textContent = "V.1OD [By DrWE]";
+    	assinatura.textContent += "/r [ DrWE © 2025 ]"; // Para simbolizar versão a correr com Rato
     }
 
     container.appendChild(assinatura);
@@ -266,6 +269,15 @@ function gerarLegenda(tiposTarefa) {
         div.innerHTML = `<span class="legenda-bola" style="background:${t.cor}"></span>${t.tipo}`;
         legendaContainer.appendChild(div);
     });
+}
+
+// ============================================================================
+// 8. FUNÇÃO: AJUSTAR A ALTURA NECESSÁRIA COMO MÍNIMA, PARA MOSTRAR O MÊS E RODAPÉ SEM CORTES
+// ============================================================================
+function ajustarAlturaNecessáriaPopupGantt(valorBase) {
+	if (!ganttPopup2) return; // garante que existe
+	let alturaNecessáriaPopupGantt = valorBase + quantidadeTecnicos*12;
+	ganttPopup2.style.height = `${alturaNecessáriaPopupGantt}px`;
 }
 
 // ============================================================================
@@ -494,7 +506,7 @@ function gerarCalendario(dados) {
           -6px -6px 15px rgba(255, 255, 255, 0.7)
         `;
         document.body.appendChild(ganttPopup2);
-        ganttPopup2.style.height = "300px";
+        ajustarAlturaNecessáriaPopupGantt(220);
 		ganttPopup2.dataset.originalHeight = ganttPopup2.style.height;
 		ganttPopup2.dataset.originalMaxHeight = ganttPopup2.style.maxHeight;
 
@@ -523,7 +535,7 @@ function gerarCalendario(dados) {
         ganttPopup2.appendChild(botaoStats);
         
 		// Define altura original do popup
-		ganttPopup2.style.height = "300px";
+		ajustarAlturaNecessáriaPopupGantt(220);
 
         // Guardar instância do gráfico para destruir se o utilizador abrir/fechar repetidamente
         let chartInstance = null;
@@ -536,7 +548,7 @@ function gerarCalendario(dados) {
     		// ---------------- EXPANDE POPUP ----------------
     		if (popupExpanded) {
         		// Expande popup para mostrar stats
-        		ganttPopup2.style.height = "770px";
+        		ajustarAlturaNecessáriaPopupGantt(710);
         		ganttPopup2.style.top = "50%";
         		ganttPopup2.style.left = "50%";
         		ganttPopup2.style.transform = "translate(-50%, -50%)";
@@ -869,7 +881,7 @@ function gerarCalendario(dados) {
                 ganttContent.appendChild(tituloStats);
 
                 // ============================================================================
-                // 10. GRÁFICOS COM CHART.JS
+                // 10. APRESENTAÇÃO DOS GRÁFICOS (via CHART.JS)
                 // ============================================================================
 				
 				// === TABELA PRINCIPAL DOS GRÁFICOS ===
@@ -1104,7 +1116,10 @@ function gerarCalendario(dados) {
                     }]
                 };
                 
-                // ================== GRÁFICO PIE ==================
+                // ===========================================================================
+				// 12. CONFIGURAÇÃO DOS GRÁFICOS
+				// ===========================================================================
+				// ================== GRÁFICO PIE ==================
             
                 // Verifica se há dados reais
 				const valores = Object.values(diasPorTipo);
@@ -1214,9 +1229,10 @@ function gerarCalendario(dados) {
                 			offset: 0
             			},
             			tooltip: {
-                			callbacks: {
+            				enabled: false   // Desativa tooltips
+                			/*callbacks: {
                     			label: (context) => `${context.label}: ${context.raw} intervenções`
-                			}
+                			}*/
             			}
        			 	}
     			}
@@ -1260,6 +1276,9 @@ function gerarCalendario(dados) {
                     				return value < 10 ? 'end' : 'center'; // cima ou dentro
                 				},
                 				offset: 2 // pequena distância quando está acima da barra
+            				},
+            				tooltip: {
+                				enabled: false   // <-- desabilita tooltips
             				}
         				},
         				scales: {
@@ -1309,7 +1328,7 @@ function gerarCalendario(dados) {
 
             } else {
                 // Fecha o STATS: restaura altura original
-				ganttPopup2.style.height = "300px";
+				ajustarAlturaNecessáriaPopupGantt(220);
 				ganttPopup2.style.top = "50%";
         		ganttPopup2.style.left = "50%";
         		ganttPopup2.style.transform = "translate(-50%, -50%)";
@@ -1454,7 +1473,9 @@ function gerarCalendario(dados) {
  		   const tbody = document.createElement("tbody");
 
  		   // Monta linhas por técnico
+ 		   quantidadeTecnicos = 0;
  		   dados.tecnicos.forEach(tecnico => {
+ 		    quantidadeTecnicos += 1;
  		   	const tarefasDoTecnico = dados.tarefas
  		       		.filter(t => t.tecnico === tecnico.nome &&
  		              		new Date(t.data_inicio).getFullYear() === ano &&
@@ -1584,14 +1605,15 @@ function gerarCalendario(dados) {
 		    	}
 
 		    	tbody.appendChild(tr);
+        		ajustarAlturaNecessáriaPopupGantt(220);
 
 		     	});
 
 		   		tabela.appendChild(tbody);
 
 
-// Ativa tooltip nas novas barras
-ativarTooltipGantt();
+				// Ativa tooltip nas novas barras
+				ativarTooltipGantt();
 
 		    	// ======= Rodapé: legenda =======
 		    	const trLegenda = document.createElement("tr");
@@ -1667,14 +1689,14 @@ ativarTooltipGantt();
     		if (popupGanttAberto) {
         		limparPopupGantt(); // tua função que limpa o conteúdo anterior
         		montarTabelaMesGantt();  // Cria a tabela e adiciona ao DOM
-ativarTooltipGantt();     // Liga os tooltips nas barras recém-criadas
+				ativarTooltipGantt();     // Liga os tooltips nas barras recém-criadas
         		return; // evita duplicar popup
     		}
 
     		// Caso contrário, monta e mostra o popup
     		limparPopupGantt();
     		montarTabelaMesGantt();  // Cria a tabela e adiciona ao DOM
-ativarTooltipGantt();     // Liga os tooltips nas barras recém-criadas
+			ativarTooltipGantt();     // Liga os tooltips nas barras recém-criadas
 
     		ganttPopup2.style.top = "50%";
     		ganttPopup2.style.left = "50%";
