@@ -90,7 +90,7 @@ function tornarDraggable(element, handle = null) {
 }
 
 // ============================================================================
-// 3. COMPATIBILIZAR CLIQUE NO TOQUE PARA MOBILE/TABLETS
+// 3. COMPATIBILIZAR CLIQUE DE BOTÕES NO TOQUE PARA MOBILE/TABLETS
 // ============================================================================
 function emularCliqueEmToque(elemento) {
     if (!elemento) return;
@@ -109,7 +109,58 @@ function emularCliqueEmToque(elemento) {
 }
 
 // ============================================================================
-// 4. FUNÇÃO: ASSINATURA E VERSÃO
+// 4. COMPATIBILIZAR O TOQUE em BARRAS do MÊS, PARA MOBILE/TABLETS
+// ============================================================================
+function ativarTooltipTouch(selector = ".barra-tarefa") {
+    const barras = document.querySelectorAll(selector);
+
+    barras.forEach(barra => {
+        // remove listeners antigos (evita duplicações)
+        barra.removeEventListener("touchstart", barra._tooltipTouchHandler);
+
+        barra._tooltipTouchHandler = function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            // lê o conteúdo do atributo title
+            const titulo = barra.getAttribute("title");
+            if (!titulo) return;
+
+            // remove qualquer tooltip anterior
+            const tooltipExistente = document.querySelector(".tooltip-touch");
+            if (tooltipExistente) tooltipExistente.remove();
+
+            // cria tooltip visível
+            const tooltip = document.createElement("div");
+            tooltip.className = "tooltip-touch";
+            tooltip.innerHTML = titulo.replace(/\n/g, "<br>");
+            tooltip.style.position = "fixed";
+            tooltip.style.zIndex = "9999";
+            tooltip.style.background = "rgba(0,0,0,0.8)";
+            tooltip.style.color = "#fff";
+            tooltip.style.padding = "8px 10px";
+            tooltip.style.borderRadius = "6px";
+            tooltip.style.fontSize = "13px";
+            tooltip.style.maxWidth = "240px";
+            tooltip.style.textAlign = "center";
+            tooltip.style.pointerEvents = "none";
+
+            // posiciona o tooltip onde o dedo tocou
+            tooltip.style.left = e.touches[0].clientX + "px";
+            tooltip.style.top = e.touches[0].clientY + "px";
+
+            document.body.appendChild(tooltip);
+
+            // remove tooltip após 2,5 segundos
+            setTimeout(() => tooltip.remove(), 2500);
+        };
+
+        barra.addEventListener("touchstart", barra._tooltipTouchHandler);
+    });
+}
+
+// ============================================================================
+// 5. FUNÇÃO: ASSINATURA E VERSÃO
 // ============================================================================
 function adicionarAssinaturaLegenda(container) {
     const assinaturaExistente = container.querySelector(".legenda-assinatura");
@@ -124,13 +175,13 @@ function adicionarAssinaturaLegenda(container) {
     assinatura.style.fontWeight = "normal";
     assinatura.style.paddingLeft = "12px";
     assinatura.style.whiteSpace = "nowrap";
-    assinatura.textContent = "V.1C << By DrWE >>";
+    assinatura.textContent = "V.1D << By DrWE >>";
 
     container.appendChild(assinatura);
 }
 
 // ============================================================================
-// 5. FUNÇÃO PRINCIPAL: CARREGAR DADOS
+// 6. FUNÇÃO PRINCIPAL: CARREGAR DADOS
 // ============================================================================
 async function carregarDados() {
     try {
@@ -183,7 +234,7 @@ async function carregarDados() {
 }
 
 // ============================================================================
-// 6. FUNÇÃO: GERAR LEGENDA
+// 7. FUNÇÃO: GERAR LEGENDA
 // ============================================================================
 function gerarLegenda(tiposTarefa) {
     legendaContainer.innerHTML = "";
@@ -196,7 +247,7 @@ function gerarLegenda(tiposTarefa) {
 }
 
 // ============================================================================
-// 7. FUNÇÃO: GERAR CALENDÁRIO
+// 8. FUNÇÃO: GERAR CALENDÁRIO
 // ============================================================================
 function gerarCalendario(dados) {
     calendarioContainer.innerHTML = "";
@@ -375,7 +426,7 @@ function gerarCalendario(dados) {
         divMes.appendChild(diasGrid);
 
         // ============================================================================
-        //  8. POPUP GANTT E CONTROLES
+        //  9. POPUP GANTT E CONTROLES
         // ============================================================================
 
         // --- Botão GANTT (ícone) ---
@@ -796,7 +847,7 @@ function gerarCalendario(dados) {
                 ganttContent.appendChild(tituloStats);
 
                 // ============================================================================
-                // 9. GRÁFICOS COM CHART.JS
+                // 10. GRÁFICOS COM CHART.JS
                 // ============================================================================
 				
 				// === TABELA PRINCIPAL DOS GRÁFICOS ===
@@ -908,7 +959,7 @@ function gerarCalendario(dados) {
                 
 
                 // ===========================================================================
-				// 10. CÁLCULO DE DIAS POR TIPO COM SOBREPOSIÇÕES POR TÉCNICO
+				// 11. CÁLCULO DE DIAS POR TIPO COM SOBREPOSIÇÕES POR TÉCNICO
 				// ===========================================================================
 				// Inicializa contadores de dias por número de técnicos
 				let diasNenhumTecnico = 0;
@@ -1511,6 +1562,7 @@ function gerarCalendario(dados) {
 		    	}
 
 		    	tbody.appendChild(tr);
+		    	ativarTooltipTouch(".barra-tarefa");
 
 		     	});
 
