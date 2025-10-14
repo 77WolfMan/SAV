@@ -37,18 +37,13 @@ const legendaContainer = document.getElementById("legenda");
 // ============================================================================
 // 2. FUNÇÃO QUE PERMITE ARRASTAR JANELAS/POPUPS
 // ============================================================================
-function tornarDraggable(element, handle) {
+function tornarDraggable(element, handle = null) {
     let startX = 0, startY = 0, origX = 0, origY = 0;
 
-    if (!handle) handle = element; // fallback, mas ideal é usar a barra do popup
+    const dragArea = handle || element;
 
     const dragStart = (e) => {
-        const target = e.target;
-        // se o alvo não for a handle, ignora (permite clicar nos botões)
-        if (!handle.contains(target)) return;
-
-        e.preventDefault(); // bloqueia scroll apenas se arrastar na handle
-
+        e.preventDefault();
         if (e.type === "touchstart") {
             startX = e.touches[0].clientX;
             startY = e.touches[0].clientY;
@@ -57,10 +52,12 @@ function tornarDraggable(element, handle) {
             startY = e.clientY;
         }
 
+        // Converter posição centralizada em left/top absolutos
         const rect = element.getBoundingClientRect();
         origX = rect.left;
         origY = rect.top;
 
+        // Remove transform apenas após calcular posição inicial
         element.style.transform = "none";
         element.style.left = origX + "px";
         element.style.top  = origY + "px";
@@ -73,6 +70,7 @@ function tornarDraggable(element, handle) {
     };
 
     const dragMove = (e) => {
+        e.preventDefault();
         const clientX = e.type.startsWith("touch") ? e.touches[0].clientX : e.clientX;
         const clientY = e.type.startsWith("touch") ? e.touches[0].clientY : e.clientY;
 
@@ -87,8 +85,8 @@ function tornarDraggable(element, handle) {
         document.removeEventListener("touchend", dragEnd);
     };
 
-    handle.addEventListener("mousedown", dragStart);
-    handle.addEventListener("touchstart", dragStart, { passive: false });
+    dragArea.addEventListener("mousedown", dragStart);
+    dragArea.addEventListener("touchstart", dragStart, { passive: false });
 }
 
 // ============================================================================
@@ -1526,24 +1524,45 @@ function gerarCalendario(dados) {
 
         // --- Clique no botão GANTT: monta o diagrama do mês e mostra o popup ---
         ganttBtn.addEventListener("click", (e) => {
-            e.stopPropagation(); // evita que o clique "vaze" e feche o popup via document click
-            
-    		// Se popup já estiver aberto, fecha antes de abrir outro
-    		if (popupGanttAberto && ganttPopup2) {
-        		ganttPopup2.remove();     // remove do DOM
-        		popupGanttAberto = false;
-        		ganttPopup2 = null;
+    		e.stopPropagation();
+
+    		// Se ainda não existir popup, cria e adiciona ao DOM
+    		if (!ganttPopup2) {
+        		ganttPopup2 = document.createElement("div");
+        		ganttPopup2.id = "popupGantt2";
+        		ganttPopup2.className = "popupGantt";
+        		ganttPopup2.style.position = "fixed";
+        		ganttPopup2.style.zIndex = "9999";
+        		ganttPopup2.style.display = "none";
+        		ganttPopup2.style.background = "#fff";
+        		ganttPopup2.style.border = "2px solid #444";
+        		ganttPopup2.style.borderRadius = "10px";
+        		ganttPopup2.style.boxShadow = "0 4px 8px rgba(0,0,0,0.3)";
+        		ganttPopup2.style.padding = "10px";
+        		ganttPopup2.style.minWidth = "700px";
+        		ganttPopup2.style.minHeight = "400px";
+
+        		document.body.appendChild(ganttPopup2);
     		}
 
+    		// Se o popup já estiver aberto, apenas atualiza o conteúdo
+    		if (popupGanttAberto) {
+        		limparPopupGantt(); // tua função que limpa o conteúdo anterior
+        		montarTabelaMesGantt(); // tua função que recria o conteúdo atualizado
+        		return; // evita duplicar popup
+    		}
+
+    		// Caso contrário, monta e mostra o popup
+    		limparPopupGantt();
+    		montarTabelaMesGantt();
+
+    		ganttPopup2.style.top = "50%";
+    		ganttPopup2.style.left = "50%";
+    		ganttPopup2.style.transform = "translate(-50%, -50%)";
+    		ganttPopup2.style.display = "block";
+
     		popupGanttAberto = true;
-            montarTabelaMesGantt();
-        
-            // Mostra e centra o popup
-            ganttPopup2.style.top = "50%";
-        	ganttPopup2.style.left = "50%";
-        	ganttPopup2.style.transform = "translate(-50%, -50%)";
-            ganttPopup2.style.display = "block";
-        });
+		});
 
         // Torna do popup arrastável
         tornarDraggable(ganttPopup2);
@@ -1660,3 +1679,23 @@ document.addEventListener('DOMContentLoaded', () => {
   ajustarColunasCalendario();
   window.addEventListener('resize', ajustarColunasCalendario);
 });
+
+// --- Compatibilizar clique com toque (mobile/tablet) ---
+function emularCliqueEmToque(elemento) {
+    let toqueIniciado = false;
+
+    elemento.addEventListener("touchstart", () => {
+        toqueIniciado = true;
+    });
+
+    elemento.addEventListener("touchend", (e) => {
+        if (toqueIniciado) {
+            e.preventDefault(); // evita clique duplo
+            elemento.click();   // emula o clique normal
+            toqueIniciado = false;
+        }
+    });
+}
+
+// Aplica ao botão "stats" (ou Gantt, conforme o caso)
+emularCliqueEmToque(ganttBtn);
