@@ -153,7 +153,7 @@ function mostrarTooltip(barra) {
     tooltip.style.padding = "6px 10px";
     tooltip.style.borderRadius = "6px";
     tooltip.style.fontSize = "13px";
-    tooltip.style.textAlign = "center";
+    tooltip.style.textAlign = "left";
     tooltip.style.left = rect.left + rect.width / 2 + "px";
     tooltip.style.top = rect.top - 30 + "px";
     tooltip.style.transform = "translateX(+5%)";
@@ -163,7 +163,7 @@ function mostrarTooltip(barra) {
 
     // Remove automaticamente após 2,5s no mobile
     if (navigator.maxTouchPoints > 0) {
-        setTimeout(removerTooltip, 2500);
+        setTimeout(removerTooltip, 3000);  // Duração da visualização 3 seg...
     }
 }
 
@@ -188,7 +188,12 @@ function adicionarAssinaturaLegenda(container) {
     assinatura.style.fontWeight = "normal";
     assinatura.style.paddingLeft = "12px";
     assinatura.style.whiteSpace = "nowrap";
-    assinatura.textContent = "V.1N << By DrWE >>";
+    if (isTouchDevice) {
+    	assinatura.textContent = "V.1OT [By DrWE]";
+    }
+    else {
+    	assinatura.textContent = "V.1OD [By DrWE]";
+    }
 
     container.appendChild(assinatura);
 }
