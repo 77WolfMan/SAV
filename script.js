@@ -115,22 +115,22 @@ function ativarTooltipGantt() {
     const barras = document.querySelectorAll(".barra-tarefa");
 
     barras.forEach(barra => {
-        // Remove listener antigo
-        if (barra._tooltipHandler) barra.removeEventListener("mouseover", barra._tooltipHandler);
-        if (barra._tooltipTouch) barra.removeEventListener("touchstart", barra._tooltipTouch);
+        // Remove listeners antigos
+        barra.onpointerenter = null;
+        barra.onpointerdown = null;
 
-        // Desktop: hover
-        barra._tooltipHandler = function(e) {
-            mostrarTooltip(barra);
+        // Desktop e pointer devices
+        barra.onpointerenter = function(e) {
+            if (e.pointerType === 'mouse') mostrarTooltip(barra);
         };
-        barra.addEventListener("mouseover", barra._tooltipHandler);
 
-        // Mobile/Tablet: touch
-        barra._tooltipTouch = function(e) {
-            e.stopPropagation();
-            mostrarTooltip(barra);
+        // Mobile / touch devices
+        barra.onpointerdown = function(e) {
+            if (e.pointerType === 'touch') {
+                e.preventDefault(); // evita click fantasma
+                mostrarTooltip(barra);
+            }
         };
-        barra.addEventListener("touchstart", barra._tooltipTouch);
     });
 }
 
@@ -180,7 +180,7 @@ function adicionarAssinaturaLegenda(container) {
     assinatura.style.fontWeight = "normal";
     assinatura.style.paddingLeft = "12px";
     assinatura.style.whiteSpace = "nowrap";
-    assinatura.textContent = "V.1F << By DrWE >>";
+    assinatura.textContent = "V.1G << By DrWE >>";
 
     container.appendChild(assinatura);
 }
