@@ -111,23 +111,29 @@ function emularCliqueEmToque(elemento) {
 // ============================================================================
 // 4. COMPATIBILIZAR O TOQUE em BARRAS do MÊS, PARA MOBILE/TABLETS
 // ============================================================================
+// Função principal para ativar tooltips nas barras do Gantt
 function ativarTooltipGantt() {
     const barras = document.querySelectorAll(".barra-tarefa");
 
     barras.forEach(barra => {
         // Remove listeners antigos
         barra.onpointerenter = null;
+        barra.onpointerleave = null;
         barra.onpointerdown = null;
 
-        // Desktop e pointer devices
+        // Desktop: hover
         barra.onpointerenter = function(e) {
             if (e.pointerType === 'mouse') mostrarTooltip(barra);
         };
 
-        // Mobile / touch devices
+        barra.onpointerleave = function() {
+            removerTooltip();
+        };
+
+        // Mobile / touch
         barra.onpointerdown = function(e) {
             if (e.pointerType === 'touch') {
-                e.preventDefault(); // evita click fantasma
+                e.preventDefault(); // evita clique fantasma
                 mostrarTooltip(barra);
             }
         };
@@ -138,9 +144,7 @@ function mostrarTooltip(barra) {
     const titulo = barra.getAttribute("title");
     if (!titulo) return;
 
-    // Remove tooltip anterior
-    const t = document.querySelector(".tooltip-touch");
-    if (t) t.remove();
+    removerTooltip(); // remove tooltip anterior
 
     const rect = barra.getBoundingClientRect();
     const tooltip = document.createElement("div");
@@ -161,7 +165,15 @@ function mostrarTooltip(barra) {
 
     document.body.appendChild(tooltip);
 
-    setTimeout(() => tooltip.remove(), 2500);
+    // Remove automaticamente após 2,5s no mobile
+    if (navigator.maxTouchPoints > 0) {
+        setTimeout(removerTooltip, 2500);
+    }
+}
+
+function removerTooltip() {
+    const t = document.querySelector(".tooltip-touch");
+    if (t) t.remove();
 }
 
 // ============================================================================
@@ -180,7 +192,7 @@ function adicionarAssinaturaLegenda(container) {
     assinatura.style.fontWeight = "normal";
     assinatura.style.paddingLeft = "12px";
     assinatura.style.whiteSpace = "nowrap";
-    assinatura.textContent = "V.1G << By DrWE >>";
+    assinatura.textContent = "V.1I << By DrWE >>";
 
     container.appendChild(assinatura);
 }
@@ -1571,7 +1583,10 @@ function gerarCalendario(dados) {
 		     	});
 
 		   		tabela.appendChild(tbody);
-		   		ativarTooltipGantt();
+
+
+// Ativa tooltip nas novas barras
+ativarTooltipGantt();
 
 		    	// ======= Rodapé: legenda =======
 		    	const trLegenda = document.createElement("tr");
@@ -1620,7 +1635,6 @@ function gerarCalendario(dados) {
 		    	ganttContent.appendChild(tabela);
 		}
 
-
         // --- Clique no botão GANTT: monta o diagrama do mês e mostra o popup ---
         ganttBtn.addEventListener("click", (e) => {
     		e.stopPropagation();
@@ -1647,13 +1661,15 @@ function gerarCalendario(dados) {
     		// Se o popup já estiver aberto, apenas atualiza o conteúdo
     		if (popupGanttAberto) {
         		limparPopupGantt(); // tua função que limpa o conteúdo anterior
-        		montarTabelaMesGantt(); // tua função que recria o conteúdo atualizado
+        		montarTabelaMesGantt();  // Cria a tabela e adiciona ao DOM
+ativarTooltipGantt();     // Liga os tooltips nas barras recém-criadas
         		return; // evita duplicar popup
     		}
 
     		// Caso contrário, monta e mostra o popup
     		limparPopupGantt();
-    		montarTabelaMesGantt();
+    		montarTabelaMesGantt();  // Cria a tabela e adiciona ao DOM
+ativarTooltipGantt();     // Liga os tooltips nas barras recém-criadas
 
     		ganttPopup2.style.top = "50%";
     		ganttPopup2.style.left = "50%";
