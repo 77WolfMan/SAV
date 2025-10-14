@@ -115,43 +115,44 @@ function ativarTooltipTouch(selector = ".barra-tarefa") {
     const barras = document.querySelectorAll(selector);
 
     barras.forEach(barra => {
-        // remove listeners antigos (evita duplicações)
-        barra.removeEventListener("touchstart", barra._tooltipTouchHandler);
+        // Remove listener antigo
+        if (barra._tooltipTouchHandler) {
+            barra.removeEventListener("touchstart", barra._tooltipTouchHandler);
+        }
 
-        barra._tooltipTouchHandler = function (e) {
+        barra._tooltipTouchHandler = function(e) {
             e.stopPropagation();
-            e.preventDefault();
 
-            // lê o conteúdo do atributo title
             const titulo = barra.getAttribute("title");
             if (!titulo) return;
 
-            // remove qualquer tooltip anterior
-            const tooltipExistente = document.querySelector(".tooltip-touch");
-            if (tooltipExistente) tooltipExistente.remove();
+            // Remove tooltip anterior
+            const t = document.querySelector(".tooltip-touch");
+            if (t) t.remove();
 
-            // cria tooltip visível
+            // Cria tooltip
             const tooltip = document.createElement("div");
             tooltip.className = "tooltip-touch";
             tooltip.innerHTML = titulo.replace(/\n/g, "<br>");
             tooltip.style.position = "fixed";
             tooltip.style.zIndex = "9999";
-            tooltip.style.background = "rgba(0,0,0,0.8)";
+            tooltip.style.background = "rgba(0,0,0,0.85)";
             tooltip.style.color = "#fff";
-            tooltip.style.padding = "8px 10px";
+            tooltip.style.padding = "6px 10px";
             tooltip.style.borderRadius = "6px";
             tooltip.style.fontSize = "13px";
-            tooltip.style.maxWidth = "240px";
             tooltip.style.textAlign = "center";
             tooltip.style.pointerEvents = "none";
 
-            // posiciona o tooltip onde o dedo tocou
-            tooltip.style.left = e.touches[0].clientX + "px";
-            tooltip.style.top = e.touches[0].clientY + "px";
+            // Posiciona no centro da barra
+            const rect = barra.getBoundingClientRect();
+            tooltip.style.left = rect.left + rect.width/2 + "px";
+            tooltip.style.top = rect.top - 30 + "px"; // acima da barra
+            tooltip.style.transform = "translateX(-50%)";
 
             document.body.appendChild(tooltip);
 
-            // remove tooltip após 2,5 segundos
+            // Remove após 2,5s
             setTimeout(() => tooltip.remove(), 2500);
         };
 
@@ -175,7 +176,7 @@ function adicionarAssinaturaLegenda(container) {
     assinatura.style.fontWeight = "normal";
     assinatura.style.paddingLeft = "12px";
     assinatura.style.whiteSpace = "nowrap";
-    assinatura.textContent = "V.1D << By DrWE >>";
+    assinatura.textContent = "V.1E << By DrWE >>";
 
     container.appendChild(assinatura);
 }
@@ -1562,11 +1563,11 @@ function gerarCalendario(dados) {
 		    	}
 
 		    	tbody.appendChild(tr);
-		    	ativarTooltipTouch(".barra-tarefa");
 
 		     	});
 
 		   		tabela.appendChild(tbody);
+		   		ativarTooltipTouch(".barra-tarefa");
 
 		    	// ======= Rodapé: legenda =======
 		    	const trLegenda = document.createElement("tr");
