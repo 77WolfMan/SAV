@@ -82,20 +82,56 @@ function gerarCalendario(dados) {
     ];
 
     const corFeriado = feriadoColor;
+    
+    // Criar o overlay de fundo (semitransparente)
+	const overlay = document.createElement("div");
+	overlay.style.position = "fixed";
+	overlay.style.top = "0";
+	overlay.style.left = "0";
+	overlay.style.width = "100%";
+	overlay.style.height = "100%";
+	overlay.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+	overlay.style.display = "none";
+	overlay.style.justifyContent = "center";
+	overlay.style.alignItems = "center";
+	overlay.style.zIndex = "999";
+	overlay.style.backdropFilter = "blur(2px)";
+	overlay.style.transition = "opacity 0.2s ease";
+	overlay.style.opacity = "0";
 
-    const ganttPopup = document.createElement("div");
-    ganttPopup.classList.add("popup");
-    ganttPopup.style.display = "none";
-    ganttPopup.style.position = "fixed";
-    ganttPopup.style.top = "50%";
-    ganttPopup.style.left = "50%";
-    ganttPopup.style.transform = "translate(-50%, -50%)";
-    ganttPopup.style.background = "#fff";
-    ganttPopup.style.padding = "10px";
-    ganttPopup.style.border = "2px solid #000";
-    ganttPopup.style.overflow = "auto";
-    ganttPopup.style.zIndex = "1000";
-    document.body.appendChild(ganttPopup);
+	// Cria o popup do Gantt
+	const ganttPopup = document.createElement("div");
+	ganttPopup.classList.add("popup");
+	ganttPopup.style.boxShadow = "0 4px 10px rgba(0,0,0,0.3)";
+	ganttPopup.style.display = "none";
+	ganttPopup.style.position = "relative";
+	ganttPopup.style.background = "#fff";
+	ganttPopup.style.padding = "10px";
+	ganttPopup.style.border = "2px solid #000";
+	ganttPopup.style.overflow = "auto";
+	ganttPopup.style.zIndex = "1000";
+	ganttPopup.style.borderRadius = "8px";
+	ganttPopup.style.minWidth = "600px";
+	overlay.appendChild(ganttPopup);
+	document.body.appendChild(overlay);
+
+	// Função auxiliar para fechar o popup
+	function fecharPopupGantt() {
+	    ajustarAlturaNecessáriaPopupGantt(ganttPopup2, 100, dados.tecnicos.length);
+	    ganttPopup2.style.display = "none";
+	    overlay.style.opacity = "0";
+ 	  	setTimeout(() => { overlay.style.display = "none"; }, 200);
+	    popupGanttAberto = false;
+	    limparPopupGantt();
+	}
+
+	// Fecha o popup ao clicar fora
+	overlay.addEventListener("mousedown", (e) => {
+    	// Fecha só se o clique for no fundo escuro
+    	if (e.target === overlay) {
+        	fecharPopupGantt();
+    	}
+	});
 
     for (let mes = 0; mes < 12; mes++) {
         const primeiroDia = new Date(ano, mes, 1);
@@ -433,9 +469,9 @@ function gerarCalendario(dados) {
         document.addEventListener("click", (ev) => {
             if (!ganttPopup2.contains(ev.target) && ev.target !== ganttBtn) {
                 ajustarAlturaNecessáriaPopupGantt(ganttPopup2, 100, dados.tecnicos.length);
-                limparPopupGantt();
                 ganttPopup2.style.display = "none";
                 popupGanttAberto = false;
+                limparPopupGantt();
             }
         });
 
@@ -447,18 +483,16 @@ function gerarCalendario(dados) {
                 try { chartInstance.destroy(); } catch(e) {}
                 chartInstance = null;
             }
-            popupExpanded = false;
         }
 
         ganttBtn.addEventListener("click", (e) => {
             e.stopPropagation();
-            if (popupGanttAberto) {
-                resetPopupGantt();
-                return;
-            }
+            // Mostra o overlay e o popup
+    		overlay.style.display = "flex";
+    		requestAnimationFrame(() => (overlay.style.opacity = "1"));
+    		ganttPopup2.style.display = "block";
+    		popupGanttAberto = true;
             montarTabelaMesGantt({mes, ano, dados, nomesMeses, container: ganttContent, cores, estilos});
-            ganttPopup2.style.display = "block";
-            popupGanttAberto = true;
         });
 
         tornarDraggable(ganttPopup2);
@@ -475,7 +509,6 @@ carregarDados();
 
 // Executa após o DOM estar pronto
 document.addEventListener('DOMContentLoaded', () => {
-  mostrarResolucao;
   ajustarColunasCalendario();
   window.addEventListener('resize', ajustarColunasCalendario);
 });
@@ -487,6 +520,9 @@ function resetPopupGantt() {
     // Limpa visualmente
     limparPopupGanttConteudo(ganttContent);
 
+    // Fecha fundo semi-transparente
+    overlay.style.display = "none";
+    document.body.removeChild(overlay);
     // Fecha popup
     ganttPopup2.style.display = "none";
     popupGanttAberto = false;

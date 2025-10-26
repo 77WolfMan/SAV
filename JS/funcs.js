@@ -6,25 +6,21 @@
 //
 // 01. Permite Arrastar Janelas/Popups no Ecrã
 // 02. Compatibilizar Clique de Rato em Touchscreen (Mobile/Tablets)
-// 03. Compatibilizar Clique de Rato nas Tarefas (Barras nos Meses) em Touchscreen (Mobile/Tablets)
-// 04. Mostrar Tooltips para Touchscreen (Mobile/Tablets)
-// 05. Remover Tooltips para Touchscreen (Mobile/Tablets)
-// 06. Assinatura do criador e Versão no Rodapé
-// 07. Ajustar a Disposição dos Meses (Linhas Vs Colunas)
-// 08. Gerar as Legendas (Tipo Bolas Coloridas)
-// 09. Ajustar Altura Mínimo Necessária para Mostrar a Janela do Mês sem Cortes
-// 10. Gráfico Tipo PIE
-// 11. Gráfico Tipo BARRAS
-// 12. FUNÇÃO DE APLICAÇÃO DE ESTILOS:
-//     Ajustar o Tamanho dos Dias Escritos nos Meses e Respectivas Bolas
-//     Criação das Bolas das Tarefas Dentro de Cada Mês
-//     Cria o botão de abertura do popup Gantt (ícone tipo "olho") e o popup vazio
-// 	   Cria a tabela e cabeçalhos da secção de estatísticas 
-// 	   Cria linhas na tabela de estatísticas (por cada interventor)
-// 	   Cria tabela para a inserção de gráficos
-//     Calcular as Estatísticas pr Mês para cada Interventor
-//	   Cria o mês em forma de mapa de gantt com inclusão de técnicos e tarefas
-// 14. Para Troubleshooting: Apresenta na Primeira Linha a Resolução Real Vs Fisica do Ecrã e True/False para Mobile
+// 03. Assinatura do criador e Versão no Rodapé
+// 04. Ajustar a Disposição dos Meses (Linhas Vs Colunas)
+// 05. Gerar as Legendas (Tipo Bolas Coloridas)
+// 06. Ajustar Altura Mínimo Necessária para Mostrar a Janela do Mês sem Cortes
+// 07. Gráfico Tipo PIE
+// 08. Gráfico Tipo BARRAS
+// 09. Ajustar o Tamanho dos Dias Escritos nos Meses e Respectivas Bolas
+// 10. Criação das Bolas das Tarefas Dentro de Cada Mês
+// 11. Cria o botão de abertura do popup Gantt (ícone tipo "olho") e o popup vazio
+// 12. Cria a tabela e cabeçalhos da secção de estatísticas 
+// 13. Cria linhas na tabela de estatísticas (por cada interventor)
+// 14. Cria tabela para a inserção de gráficos
+// 15. Calcular as Estatísticas pr Mês para cada Interventor
+// 16. Cria o mês em forma de mapa de gantt com inclusão de técnicos e tarefas
+// 17. Para Troubleshooting: Apresenta na Primeira Linha a Resolução Real Vs Fisica do Ecrã e True/False para Mobile
 // ============================================================================
 
 
@@ -103,79 +99,7 @@ function emularCliqueEmToque(elemento) {
 }
 
 // ============================================================================
-// 3. COMPATIBILIZAR O TOQUE DE RATO NAS TAREFAS (BARRAS NOS MESES) EM TOUCHSCREEN PARA MOBILE/TABLETS
-// ============================================================================
-// Função principal para ativar tooltips nas barras do Gantt
-/*function ativarTooltipGantt() {
-    const barras = document.querySelectorAll(".barra-tarefa");
-
-    barras.forEach(barra => {
-        // Limpa quaisquer listeners antigos
-        barra.onpointerenter = null;
-        barra.onpointerleave = null;
-        barra.onpointerdown = null;
-
-        if (isTouchDevice) {
-            // Mobile / Tablet → tooltip ao toque
-            barra.onpointerdown = function(e) {
-                if (e.pointerType === 'touch' || e.pointerType === 'pen') {
-                    e.preventDefault(); // evita clique fantasma
-                    mostrarTooltip(barra);
-                }
-            };
-
-        } 
-    });
-}*/
-// === TOOLTIPS UNIFICADOS PARA BARRAS DO GANTT ===
-
-
-/*// ============================================================================
-// 4. MOSTRAR TOOLTIPS PARA TOUCHSCREEN EM MOBILE/TABLETS
-// ============================================================================
-function mostrarTooltip(barra) {
-    const titulo = barra.getAttribute("title");
-    if (!titulo) return;
-
-    removerTooltip(); // remove tooltip anterior
-
-    const rect = barra.getBoundingClientRect();
-    const tooltip = document.createElement("div");
-    tooltip.className = "tooltip-touch";
-    tooltip.innerHTML = titulo.replace(/\n/g, "<br>");
-    tooltip.style.position = "fixed";
-    tooltip.style.zIndex = "9999";
-    tooltip.style.background = "rgba(0,0,0,0.85)";
-    tooltip.style.color = "#fff";
-    tooltip.style.padding = "6px 10px";
-    tooltip.style.borderRadius = "6px";
-    tooltip.style.fontSize = "13px";
-    tooltip.style.textAlign = "left";
-    tooltip.style.left = rect.left + rect.width / 2 + "px";
-    tooltip.style.top = rect.top - 30 + "px";
-    tooltip.style.transform = "translateX(+5%)";
-    tooltip.style.pointerEvents = "none";
-
-    document.body.appendChild(tooltip);
-
-    // Remove automaticamente após 2,5s no mobile
-    if (navigator.maxTouchPoints > 0) {
-        setTimeout(removerTooltip, 3000);  // Duração da visualização 3 seg...
-    }
-}
-
-// ============================================================================
-// 5. REMOVER TOOLTIPS PARA TOUCHSCREEN EM MOBILE/TABLETS
-// ============================================================================
-function removerTooltip() {
-    const t = document.querySelector(".tooltip-touch");
-    if (t) t.remove();
-}
-*/
-
-
-// ============================================================================
-// 6. ASSINATURA DO CRIADOR E VERSÃO NO RODAPÉ
+// 3. ASSINATURA DO CRIADOR E VERSÃO NO RODAPÉ
 // ============================================================================
 function adicionarAssinaturaLegenda(container) {
     const assinaturaExistente = container.querySelector(".legenda-assinatura");
@@ -203,7 +127,7 @@ function adicionarAssinaturaLegenda(container) {
 }
 
 // ============================================================================
-// 7. AJUSTAR A DISPOSIÇÃO DOS MESES (LINHAS Vs Colunas)
+// 4. AJUSTAR A DISPOSIÇÃO DOS MESES (LINHAS Vs Colunas)
 // ============================================================================
 function ajustarColunasCalendario() {
   const calendario = document.getElementById('calendario');
@@ -235,7 +159,7 @@ function ajustarColunasCalendario() {
 }
 
 // ============================================================================
-// 8. GERAR AS LEGENDAS DO TIPO BOLAS
+// 5. GERAR AS LEGENDAS DO TIPO BOLAS
 // ============================================================================
 function gerarLegenda(tiposTarefa) {
     legendaContainer.innerHTML = "";
@@ -248,7 +172,7 @@ function gerarLegenda(tiposTarefa) {
 }
 
 // ============================================================================
-// 9. AJUSTAR A ALTURA MÍNIMA NECESSÁRIA PARA MOSTRAR A JANELA DO MÊS SEM CORTES
+// 6. AJUSTAR A ALTURA MÍNIMA NECESSÁRIA PARA MOSTRAR A JANELA DO MÊS SEM CORTES
 // ============================================================================
 function ajustarAlturaNecessáriaPopupGantt(container, valorBase, quantidadeTecnicos) {  
   if (!container) return; // garante que existe
@@ -264,7 +188,7 @@ function ajustarAlturaNecessáriaPopupGantt(container, valorBase, quantidadeTecn
 }
 
 // ============================================================================
-// 10. GRÁFICO TIPO PIE
+// 7. GRÁFICO TIPO PIE
 // ============================================================================
 function criarGraficoPie(diasPorTipo, coresCategorias, canvasId) {
     const valores = Object.values(diasPorTipo);
@@ -392,7 +316,7 @@ function criarGraficoPie(diasPorTipo, coresCategorias, canvasId) {
 }
 
 // ============================================================================
-// 11. GRÁFICO TIPO BARRAS
+// 8. GRÁFICO TIPO BARRAS
 // ============================================================================
 function criarGraficoBar(diasNenhumTecnico, diasApenas1Tecnico, diasApenas2Tecnicos, diasMais2Tecnicos, diasFeriadoComTec, diasSabadoComTec, diasDomingoComTec, canvasId) {
     const ctx = document.getElementById(canvasId).getContext('2d');
@@ -474,7 +398,7 @@ function criarGraficoBar(diasNenhumTecnico, diasApenas1Tecnico, diasApenas2Tecni
 }
 
 // ============================================================================
-// 12. FUNÇÃO DE APLICAÇÃO DE ESTILOS
+// 9. FUNÇÃO DE APLICAÇÃO DE ESTILOS
 //     Ajustar o Tamanho dos Dias Escritos nos Meses e Respectivas Bolas
 // ============================================================================
 function ajustarTamanhoDiasEBolas() {
@@ -535,7 +459,7 @@ function ajustarTamanhoDiasEBolas() {
 }
 
 // ============================================================================
-// 12. FUNÇÃO DE APLICAÇÃO DE ESTILOS
+// 10. FUNÇÃO DE APLICAÇÃO DE ESTILOS
 //     Criação das Bolas das Tarefas Dentro de Cada Mês
 //
 //     Argumentos de entrada: tarefa, tecnico, tipoInfo
@@ -601,7 +525,7 @@ function criaBolaTarefa(tarefa, tecnico, tipoInfo) {
 }
 
 // ============================================================================
-// 12. FUNÇÃO DE APLICAÇÃO DE ESTILOS
+// 11. FUNÇÃO DE APLICAÇÃO DE ESTILOS
 //     Cria o botão de abertura do popup Gantt (ícone tipo "olho") e o popup vazio
 //
 //     Argumentos de entrada: divMes (elemento do mês onde o botão será inserido), titleColor, backgroundBotaoStats
@@ -895,7 +819,7 @@ function criarTabelaEstatisticas( ganttPopup2, ganttContent, chartInstance, titl
    
    
 // ============================================================================
-// 12. FUNÇÃO DE APLICAÇÃO DE ESTILOS
+// 13. FUNÇÃO DE APLICAÇÃO DE ESTILOS
 // 	   Cria linhas na tabela de estatísticas (por cada interventor)
 //
 // 	   Argumentos de entrada: 	tecnico, diasDisponiveis, diasTrabalhadosSemana, diasTrabalhadosFeriados, 
@@ -1074,7 +998,7 @@ function criarLinhaTabelaEstatisticas(
 }
 
 // ============================================================================
-// 12. FUNÇÃO DE APLICAÇÃO DE ESTILOS
+// 14. FUNÇÃO DE APLICAÇÃO DE ESTILOS
 // 	   Cria tabela para a inserção de gráficos
 //
 // 	   Argumentos de entrada: 	ganttBtn, mes
@@ -1191,7 +1115,7 @@ function criaTabelaGraficos(ganttContent, mes) {
 }
 
 // ============================================================================
-// 13. FUNÇÃO AUXILIAR PARA CALCULAS AS ESTATISTICAS POR MÊS PARA CADA INTERVENTOR
+// 15. FUNÇÃO AUXILIAR PARA CALCULAS AS ESTATISTICAS POR MÊS PARA CADA INTERVENTOR
 // 	   Cria linhas na tabela de estatísticas (por cada interventor)
 //
 // 	   Argumentos de entrada: 	options -> options: { tecnicoNome, tarefas, feriados, mesIndex, ano, parseDateLocal }
@@ -1321,7 +1245,7 @@ function calcularEstatisticasTecnicoNoMes(options) {
 }
 
 // ============================================================================
-// 14. FUNÇÃO DE APLICAÇÃO DE ESTILOS
+// 16. FUNÇÃO DE APLICAÇÃO DE ESTILOS
 // 	   Cria o mês em forma de mapa de gantt com inclusão de técnicos e tarefas
 //
 // 	   Argumentos de entrada: 	mes, ano, dados, nomesMeses, container, cores, estilos
@@ -1694,62 +1618,62 @@ function montarTabelaMesGantt({ mes, ano, dados, nomesMeses, container, cores, e
 	        if (ladoDirAdjacente) divBarra.style.borderRight = "0";
 
         	// === TOOLTIPS CUSTOMIZADO ===
-let tarefasSpan = [];
-for (let k = 0; k < span; k++) {
-    tranchasMes[i + k].forEach(tt => {
-        if (!tarefasSpan.includes(tt)) tarefasSpan.push(tt);
-    });
-}
+			let tarefasSpan = [];
+			for (let k = 0; k < span; k++) {
+			    tranchasMes[i + k].forEach(tt => {
+			        if (!tarefasSpan.includes(tt)) tarefasSpan.push(tt);
+			    });
+			}
 
-const sobreposicao = tarefasSpan.length > 1;
+			const sobreposicao = tarefasSpan.length > 1;
 
-// Cria tooltip (uma vez)
-let tooltip = document.createElement("div");
-tooltip.className = "tooltip-gantt";
-tooltip.style.position = "absolute";
-tooltip.style.backgroundColor = "rgba(0,0,0,0.8)";
-tooltip.style.color = "#fff";
-tooltip.style.padding = "4px 8px";
-tooltip.style.borderRadius = "4px";
-tooltip.style.fontSize = "13px";
-tooltip.style.pointerEvents = "none";
-tooltip.style.whiteSpace = "pre";
-tooltip.style.display = "none";
-tooltip.style.zIndex = "10000";
-document.body.appendChild(tooltip);
+			// Cria tooltip (uma vez)
+			let tooltip = document.createElement("div");
+			tooltip.className = "tooltip-gantt";
+			tooltip.style.position = "absolute";
+			tooltip.style.backgroundColor = "rgba(0,0,0,0.8)";
+			tooltip.style.color = "#fff";
+			tooltip.style.padding = "4px 8px";
+			tooltip.style.borderRadius = "4px";
+			tooltip.style.fontSize = "13px";
+			tooltip.style.pointerEvents = "none";
+			tooltip.style.whiteSpace = "pre";
+			tooltip.style.display = "none";
+			tooltip.style.zIndex = "10000";
+			document.body.appendChild(tooltip);
 
-// Texto do tooltip
-const textoTooltip = tarefasSpan.map(tt => {
-    return sobreposicao
-        ? `${tt.cliente} (${tt.tipo}): ${tt.duracao} dia(s)`
-        : `${tt.cliente}: ${tt.duracao} dia(s)`;
-}).join("\n");
+			// Texto do tooltip
+			const textoTooltip = tarefasSpan.map(tt => {
+			    return sobreposicao
+			        ? `${tt.cliente} (${tt.tipo}): ${tt.duracao} dia(s)`
+			        : `${tt.cliente}: ${tt.duracao} dia(s)`;
+			}).join("\n");
 
-// Função de mostrar tooltip
-function showTooltip(e) {
-    tooltip.textContent = textoTooltip;
-    tooltip.style.display = "block";
+			// Função de mostrar tooltip
+			function showTooltip(e) {
+			    tooltip.textContent = textoTooltip;
+ 			   	tooltip.style.display = "block";
 
-    if (e.pointerType === "touch" || e.pointerType === "pen") {
-        const rect = divBarra.getBoundingClientRect();
-        tooltip.style.left = rect.left + window.scrollX + rect.width / 2 + "px";
-        tooltip.style.top = rect.top + window.scrollY - 30 + "px";
+    			if (e.pointerType === "touch" || e.pointerType === "pen") {
+        			const rect = divBarra.getBoundingClientRect();
+        			tooltip.style.left = rect.left + window.scrollX + rect.width / 2 + "px";
+        			tooltip.style.top = rect.top + window.scrollY - 30 + "px";
 
-        // Remove após 3 segundos
-        setTimeout(() => {
-            tooltip.style.display = "none";
-        }, 3000);
-    } else { // mouse
-        tooltip.style.left = e.pageX + 10 + "px";
-        tooltip.style.top = e.pageY + 10 + "px";
-    }
-}
+        			// Remove após 3 segundos
+        			setTimeout(() => {
+            			tooltip.style.display = "none";
+        			}, 3000);
+    			} else { // mouse
+        			tooltip.style.left = e.pageX + 10 + "px";
+        			tooltip.style.top = e.pageY + 10 + "px";
+    			}
+			}
 
-// Eventos
-divBarra.addEventListener("mouseenter", showTooltip); // desktop
-divBarra.addEventListener("mousemove", showTooltip);  // atualiza posição
-divBarra.addEventListener("mouseleave", () => { tooltip.style.display = "none"; });
-divBarra.addEventListener("pointerdown", showTooltip); // touch
+			// Eventos
+			divBarra.addEventListener("mouseenter", showTooltip); // desktop
+			divBarra.addEventListener("mousemove", showTooltip);  // atualiza posição
+			divBarra.addEventListener("mouseleave", () => { tooltip.style.display = "none"; });
+			divBarra.addEventListener("pointerdown", showTooltip); // touch
 
 			
         	containerBarras.appendChild(divBarra);
@@ -1821,7 +1745,6 @@ divBarra.addEventListener("pointerdown", showTooltip); // touch
     	tabelaContinuidade.appendChild(tbody2);
     	tabelasWrapper.appendChild(tabelaContinuidade);
 	}
-
 	// Adiciona o wrapper ao container
 	container.appendChild(tabelasWrapper);
 
@@ -1878,13 +1801,11 @@ divBarra.addEventListener("pointerdown", showTooltip); // touch
 
 	// Adiciona a tabela de legenda ao container
 	container.appendChild(tabelaLegenda);
-	
-    // ====== Ativa tooltip nas barras ======
-    //if (typeof ativarTooltipGantt === "function") ativarTooltipGantt();
+
 }
 
 // ============================================================================
-// 13. PARA TROUBLESHOOTING: MOSTRA NA PRIMEIRA LINHA A RESOLUÇÃO REAL Vs FÍSICA DP ECRÃ E TRUE/FALSE PARA MOBILE
+// 17. PARA TROUBLESHOOTING: MOSTRA NA PRIMEIRA LINHA A RESOLUÇÃO REAL Vs FÍSICA DP ECRÃ E TRUE/FALSE PARA MOBILE
 // ============================================================================
 function showInfos() {
     // Detectar telemóvel via userAgent
