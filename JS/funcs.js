@@ -1867,7 +1867,7 @@ function montarTabelaMesGantt({ mes, ano, dados, nomesMeses, container, cores, e
 	container.appendChild(tabelaLegenda);
 	
     // ====== Ativa tooltip nas barras ======
-    if (typeof ativarTooltipGantt === "function") ativarTooltipGantt();
+    //if (typeof ativarTooltipGantt === "function") ativarTooltipGantt();
 }
 
 // ============================================================================
