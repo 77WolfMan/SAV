@@ -1692,52 +1692,64 @@ function montarTabelaMesGantt({ mes, ano, dados, nomesMeses, container, cores, e
 	        if (ladoDirAdjacente) divBarra.style.borderRight = "0";
 
         	// === TOOLTIPS CUSTOMIZADO ===
-			let tarefasSpan = [];
-			for (let k = 0; k < span; k++) {
-			    tranchasMes[i + k].forEach(tt => {
-			        if (!tarefasSpan.includes(tt)) tarefasSpan.push(tt);
-			    });
-			}
+			// === TOOLTIP UNIFICADO PARA DESKTOP E TOUCH ===
+let tarefasSpan = [];
+for (let k = 0; k < span; k++) {
+    tranchasMes[i + k].forEach(tt => {
+        if (!tarefasSpan.includes(tt)) tarefasSpan.push(tt);
+    });
+}
 
-			const sobreposicao = tarefasSpan.length > 1;
+const sobreposicao = tarefasSpan.length > 1;
 
-			// Criar tooltip
-			const tooltip = document.createElement("div");
-			tooltip.style.position = "absolute";
-			tooltip.style.backgroundColor = "rgba(0,0,0,0.8)";
-			tooltip.style.color = "#fff";
-			tooltip.style.padding = "4px 8px";
-			tooltip.style.borderRadius = "4px";
-			tooltip.style.fontSize = "13px"; // tamanho da letra do tooltip
-			tooltip.style.pointerEvents = "none";
-			tooltip.style.whiteSpace = "pre"; // mantém quebras de linha
-			tooltip.style.display = "none"; // começa escondido
-			tooltip.style.zIndex = "10000";
-			document.body.appendChild(tooltip);
+// Cria tooltip (uma vez)
+let tooltip = document.createElement("div");
+tooltip.className = "tooltip-gantt";
+tooltip.style.position = "absolute";
+tooltip.style.backgroundColor = "rgba(0,0,0,0.8)";
+tooltip.style.color = "#fff";
+tooltip.style.padding = "4px 8px";
+tooltip.style.borderRadius = "4px";
+tooltip.style.fontSize = "13px";
+tooltip.style.pointerEvents = "none";
+tooltip.style.whiteSpace = "pre";
+tooltip.style.display = "none";
+tooltip.style.zIndex = "10000";
+document.body.appendChild(tooltip);
 
-			// Conteúdo do tooltip
-			const textoTooltip = tarefasSpan.map(tt => {
-			    return sobreposicao
-			        ? `${tt.cliente} (${tt.tipo}): ${tt.duracao} dia(s)`
-			        : `${tt.cliente}: ${tt.duracao} dia(s)`;
-			}).join("\n");
+// Texto do tooltip
+const textoTooltip = tarefasSpan.map(tt => {
+    return sobreposicao
+        ? `${tt.cliente} (${tt.tipo}): ${tt.duracao} dia(s)`
+        : `${tt.cliente}: ${tt.duracao} dia(s)`;
+}).join("\n");
 
-			// Eventos do mouse
-			divBarra.addEventListener("mouseenter", (e) => {
-			    tooltip.textContent = textoTooltip;
-			    tooltip.style.display = "block";
-			    tooltip.style.left = e.pageX + 10 + "px";
-			    tooltip.style.top = e.pageY + 10 + "px";
-			});
+// Função de mostrar tooltip
+function showTooltip(e) {
+    tooltip.textContent = textoTooltip;
+    tooltip.style.display = "block";
 
-			divBarra.addEventListener("mousemove", (e) => {
-			    tooltip.style.left = e.pageX + 10 + "px";
-			    tooltip.style.top = e.pageY + 10 + "px";
-			});
+    if (e.pointerType === "touch" || e.pointerType === "pen") {
+        const rect = divBarra.getBoundingClientRect();
+        tooltip.style.left = rect.left + window.scrollX + rect.width / 2 + "px";
+        tooltip.style.top = rect.top + window.scrollY - 30 + "px";
 
-			divBarra.addEventListener("mouseleave", () => {
-			    tooltip.style.display = "none";
-			});
+        // Remove após 3 segundos
+        setTimeout(() => {
+            tooltip.style.display = "none";
+        }, 3000);
+    } else { // mouse
+        tooltip.style.left = e.pageX + 10 + "px";
+        tooltip.style.top = e.pageY + 10 + "px";
+    }
+}
+
+// Eventos
+divBarra.addEventListener("mouseenter", showTooltip); // desktop
+divBarra.addEventListener("mousemove", showTooltip);  // atualiza posição
+divBarra.addEventListener("mouseleave", () => { tooltip.style.display = "none"; });
+divBarra.addEventListener("pointerdown", showTooltip); // touch
+
 			
         	containerBarras.appendChild(divBarra);
         i += span;
@@ -1867,7 +1879,7 @@ function montarTabelaMesGantt({ mes, ano, dados, nomesMeses, container, cores, e
 	container.appendChild(tabelaLegenda);
 	
     // ====== Ativa tooltip nas barras ======
-    //if (typeof ativarTooltipGantt === "function") ativarTooltipGantt();
+    if (typeof ativarTooltipGantt === "function") ativarTooltipGantt();
 }
 
 // ============================================================================
