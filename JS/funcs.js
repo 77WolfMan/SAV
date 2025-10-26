@@ -106,7 +106,7 @@ function emularCliqueEmToque(elemento) {
 // 3. COMPATIBILIZAR O TOQUE DE RATO NAS TAREFAS (BARRAS NOS MESES) EM TOUCHSCREEN PARA MOBILE/TABLETS
 // ============================================================================
 // Função principal para ativar tooltips nas barras do Gantt
-function ativarTooltipGantt() {
+/*function ativarTooltipGantt() {
     const barras = document.querySelectorAll(".barra-tarefa");
 
     barras.forEach(barra => {
@@ -126,9 +126,11 @@ function ativarTooltipGantt() {
 
         } 
     });
-}
+}*/
+// === TOOLTIPS UNIFICADOS PARA BARRAS DO GANTT ===
 
-// ============================================================================
+
+/*// ============================================================================
 // 4. MOSTRAR TOOLTIPS PARA TOUCHSCREEN EM MOBILE/TABLETS
 // ============================================================================
 function mostrarTooltip(barra) {
@@ -169,7 +171,7 @@ function removerTooltip() {
     const t = document.querySelector(".tooltip-touch");
     if (t) t.remove();
 }
-
+*/
 
 
 // ============================================================================
@@ -1692,7 +1694,6 @@ function montarTabelaMesGantt({ mes, ano, dados, nomesMeses, container, cores, e
 	        if (ladoDirAdjacente) divBarra.style.borderRight = "0";
 
         	// === TOOLTIPS CUSTOMIZADO ===
-			// === TOOLTIP UNIFICADO PARA DESKTOP E TOUCH ===
 let tarefasSpan = [];
 for (let k = 0; k < span; k++) {
     tranchasMes[i + k].forEach(tt => {
@@ -1879,7 +1880,7 @@ divBarra.addEventListener("pointerdown", showTooltip); // touch
 	container.appendChild(tabelaLegenda);
 	
     // ====== Ativa tooltip nas barras ======
-    if (typeof ativarTooltipGantt === "function") ativarTooltipGantt();
+    //if (typeof ativarTooltipGantt === "function") ativarTooltipGantt();
 }
 
 // ============================================================================
